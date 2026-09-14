@@ -111,7 +111,7 @@ async function main() {
     let p0Count = 0;
     for (const { file } of bucket) {
       const res = scanP0(file, contents.get(file) ?? "", lang);
-      p0Count += res.findings.length;
+      p0Count += res.run.findings;
       allFindings.push(...res.findings);
     }
     toolRuns.push({ tool: "desloper", ok: true, files: bucket.length, findings: p0Count, error: null });

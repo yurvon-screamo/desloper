@@ -1,5 +1,8 @@
 # desloper tools map — the scanner contract (scanner -> source -> lang -> invocation).
 # This file is documentation-as-config; setup-vendors.sh mirrors it.
+# NOTE on `name`: it is the VENDOR DIRECTORY name under vendors/ — for most
+# entries it coincides with the scanner id in report tool_runs, but not
+# always: vietnamese-humanizer (dir) is scanned by the `viet-lint` tool.
 
 tools:
   - name: texthumanize
