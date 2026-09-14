@@ -9,13 +9,13 @@ import { scanP0 } from "./scanners/p0.ts";
 import { renderMarkdown } from "./report.ts";
 import type { Finding, Lang, Report, ToolRun } from "./scanners/types.ts";
 import type { Scanner } from "./scanners/base.ts";
-import { TextHumanizeScanner } from "./scanners/texthumanize.ts";
+import { PhraseScanner } from "./scanners/phrase.ts";
 import { AvoidAiWritingScanner } from "./scanners/avoid-ai-writing.ts";
 import { ZeroSlopScanner } from "./scanners/zero-slop.ts";
-import { HumanizerSkillScanner } from "./scanners/humanizer-skill.ts";
+import { MetricsScanner } from "./scanners/metrics-scanner.ts";
 import { HumanizerRuScanner } from "./scanners/humanizer-ru.ts";
 import { ImNotAiScanner } from "./scanners/im-not-ai.ts";
-import { VietLintScanner } from "./scanners/viet-lint.ts";
+import { ViBuiltinScanner } from "./scanners/vi-builtin.ts";
 
 const ROOT = join(import.meta.dir, "..");
 
@@ -79,13 +79,13 @@ async function main() {
   }
 
   const scanners: Scanner[] = [
-    new TextHumanizeScanner(),
+    new PhraseScanner(),
     new AvoidAiWritingScanner(),
     new ZeroSlopScanner(),
-    new HumanizerSkillScanner(),
+    new MetricsScanner(),
     new HumanizerRuScanner(),
     new ImNotAiScanner(),
-    new VietLintScanner(),
+    new ViBuiltinScanner(),
   ];
 
   // Group files by language; vendor-independent P0 scan runs on raw content.

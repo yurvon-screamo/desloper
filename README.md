@@ -13,8 +13,8 @@ ranges like N5–N1).
 
 ```bash
 bun install
-bun src/cli.ts --setup     # one-time: clone MIT vendors + uv venv (non-interactive)
-bun src/cli.ts path/to/content
+bun src/cli.ts path/to/content   # built-in scanners work with zero setup
+bun src/cli.ts --setup           # optional: adds RU/KO vendor scanners (2 MIT repos + uv venv)
 ```
 
 Report goes to stdout; exit code is CI-safe:
@@ -29,15 +29,16 @@ bun src/cli.ts content/ --lang ru              # override auto-detect if unsure
 
 ## Scanners (config/tools.yaml is the contract)
 
-| Language | Scanners |
-|---|---|
-| EN | texthumanize (inspect-only) · avoid-ai-writing-detector (npm, pinned) · zero-slop (npx, pinned) · humanizer-skill (vendor) |
-| RU | humanizer-ru scan.py (genre-calibrated: docs→academic) · texthumanize |
-| KO | im-not-ai deterministic shim (KatFish metrics; LLM routes never invoked) · texthumanize |
-| VI | viet-writing-lint (vietnamese-humanizer) · texthumanize |
+| Language | Built-in (zero setup) | Vendor scanners (after --setup) |
+|---|---|---|
+| EN | phrases · metrics (humanizer-skill lib, vendored) | avoid-ai-writing (npm, pinned) · zero-slop (npx, pinned) |
+| RU | phrases | humanizer-ru scan.py (genre-calibrated: docs→academic) |
+| KO | phrases (series-distilled KO list) | im-not-ai deterministic shim (KatFish metrics; LLM routes never invoked) |
+| VI | phrases + viet-lint (pattern catalog as data) | — |
 
-Known trap covered: texthumanize's auto language detect confuses Vietnamese
-with French — desloper always passes an explicit language.
+Dead/dormant upstreams were absorbed as data with attribution
+(config/dictionaries/, vendored lib) instead of staying runtime
+dependencies — see tools.yaml "REMOVED VENDORS".
 
 ## Per-project false positives
 

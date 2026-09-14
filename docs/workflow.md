@@ -27,10 +27,6 @@ use the vendor fact-checkers directly — this is the recipe that validated
 # EN: preservation validator (code blocks, frontmatter, URLs, headings)
 node node_modules/avoid-ai-writing-detector/detector/validate.js before.md after.md
 
-# EN: fact survival (numbers, URLs, dates, versions, acronyms)
-node vendors/humanizer-skill/cli/index.js compare \
-  --before before.md --after after.md --check-facts
-
 # RU: fact-lock + cleanliness before/after (numbers, dates, names, links, code)
 vendors/.venv/bin/python vendors/humanizer-ru/skills/humanizer-ru/scripts/scan.py \
   after.md --before before.md

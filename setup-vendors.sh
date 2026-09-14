@@ -39,23 +39,11 @@ while IFS='|' read -r name repo sha; do
   fi
 done < <(vendor_pins)
 
-step "texthumanize (system CLI, best-effort via uv tool)"
-if ! command -v texthumanize >/dev/null 2>&1; then
-  if [ "$DRY_RUN" = "true" ]; then
-    echo "    (dry-run) would run: uv tool install texthumanize"
-  else
-    uv tool install texthumanize || echo "WARN: could not install texthumanize; install manually (pipx/uv tool install texthumanize)"
-  fi
-else
-  echo "    already installed"
-fi
-
 step "python venv (uv) for RU/KO/VI scanners"
 VENV="$ROOT/vendors/.venv"
 if [ "$DRY_RUN" != "true" ]; then
   [ -d "$VENV" ] || uv venv "$VENV" --quiet
   uv pip install --python "$VENV/bin/python" --quiet "razdel==0.5.0" "pymorphy3==2.0.6"
-  uv pip install --python "$VENV/bin/python" --quiet -e "$ROOT/vendors/vietnamese-humanizer"
 fi
 
 step "npm deps (avoid-ai-writing-detector pinned in package.json)"

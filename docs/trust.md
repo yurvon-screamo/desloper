@@ -15,9 +15,8 @@
 
 ## What scan runs
 
-- `texthumanize` — algorithmic local CLI (installed by `--setup` via
-  `uv tool` when possible; desloper only ever invokes its `--detect-ai`
-  inspect mode).
+- Built-in scanners (phrases / metrics / viet-lint / desloper P0): pure
+  local data + code, zero subprocess, zero network.
 - Vendor scripts listed in config/tools.yaml. Two things desloper
   deliberately never invokes:
   - **im-not-ai LLM routes** (light/standard/heavy rewriting pipelines) —
@@ -28,18 +27,20 @@
   (version-pinned, but the package itself downloads from the npm registry
   on first use and during availability checks). If that matters for your
   threat model, pre-install it or vendor the package. All other scanners
-  are fully local, including texthumanize (algorithmic, no model download).
+  are fully local.
 
 ## Vendor provenance
 
-| Vendor | License | Series usage |
-|---|---|---|
-| Aboudjem/humanizer-skill | MIT | EN metrics + fact-compare |
-| ilyautov/humanizer-ru | MIT | RU 64-marker scanner (genre-calibrated) |
-| epoko77-ai/im-not-ai | MIT | KO deterministic KatFish metrics |
-| longhang2004/vietnamese-humanizer | MIT | VI surface linter |
-| avoid-ai-writing-detector (npm) | MIT | EN deterministic detector |
-| zero-slop (npx) | MIT | EN 294-pattern scorer (local mode) |
+| Source | License | Status | What we took |
+|---|---|---|---|
+| ilyautov/humanizer-ru | MIT | active vendor | live scanner (genre-calibrated) |
+| epoko77-ai/im-not-ai | MIT | active vendor | live deterministic shim |
+| avoid-ai-writing-detector (npm) | MIT | pinned dep | live detector |
+| zero-slop (npx) | MIT | pinned dep | live scorer (local mode) |
+| texthumanize | MIT | absorbed | cliche/bureaucratic dictionaries → config/dictionaries/ |
+| Aboudjem/humanizer-skill | MIT | absorbed (dormant) | metrics/vocabulary/tokenize.js vendored into src/scanners/ |
+| longhang2004/vietnamese-humanizer | MIT | absorbed (dormant) | pattern catalog → vi-patterns.json |
 
-All were exercised on production content during the source series before
-being vendored here.
+Every absorbed artifact retains its MIT license and attribution; all were
+exercised on production content during the source series before being
+absorbed.

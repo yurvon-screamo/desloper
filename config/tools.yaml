@@ -2,49 +2,30 @@
 # This file is documentation-as-config; setup-vendors.sh mirrors it.
 # NOTE on `name`: it is the VENDOR DIRECTORY name under vendors/ — for most
 # entries it coincides with the scanner id in report tool_runs, but not
-# always: vietnamese-humanizer (dir) is scanned by the `viet-lint` tool.
+# always.
+#
+# BUILT-IN scanners (no vendors, no network, data under config/dictionaries):
+#   - phrases       (all langs) — AI cliche/bureaucratic dictionaries
+#                    extracted from texthumanize (MIT) + series-distilled
+#                    KO/VI lists. Replaced the texthumanize system CLI.
+#   - metrics       (en) — vendored dependency-free lib of
+#                    Aboudjem/humanizer-skill (MIT): lexical tells +
+#                    burstiness + trigram repetition + MATTR.
+#   - viet-lint     (vi) — vietnamese-humanizer (MIT, longhang2004)
+#                    pattern catalog converted to JSON; dormant upstream
+#                    absorbed as data.
+#   - desloper      (all) — vendor-independent P0 placeholder scanner.
 
 tools:
-  - name: texthumanize
-    source: system CLI (https://github.com/… texthumanize, pipx/uv tool)
-    langs: [en, ru, ko, vi]
-    invoke: "texthumanize --detect-ai --json -l <lang> <file>"
-    mode: inspect-only (--detect-ai locked; rewriting modes deliberately inaccessible)
-    note: language always forced — auto-detect confuses vi with fr
-    vendor_exit: 0
-
-  - name: avoid-ai-writing
-    source: npm avoid-ai-writing-detector@3.35.0 (pinned + bun.lock)
-    langs: [en]
-    invoke: "bin --source-mode rendered-markdown --context technical <file>"
-    mode: detect-only; per-file gate: >6 findings upgrades sub-high severities to P1 (triage.ts)
-    vendor_exit: "0 ok / 2 usage-IO"
-
-  - name: zero-slop
-    source: npx zero-slop@2.12.1 (pinned)
-    langs: [en]
-    invoke: "npx --yes zero-slop@2.12.1 score <file> --json"
-    mode: local scorer only (hosted MCP editing deliberately not used)
-    note: catches contrast formulas introduced by dash->period rewrites
-    vendor_exit: 0
-
-  - name: humanizer-skill
-    source: git https://github.com/Aboudjem/humanizer-skill (MIT)
-    sha: a58df065367550b6ce40ff3f648335018d8e0589
-    langs: [en]
-    invoke: "node vendors/humanizer-skill/cli/index.js score <file>"
-    mode: metrics only; compare --check-facts is a docs/workflow.md recipe
-    vendor_exit: "0 ok / 1 findings"
-
   - name: humanizer-ru
     source: git https://github.com/ilyautov/humanizer-ru (MIT)
     sha: 7fed91f99700a937b82e0c32094872ba8a5843da
     langs: [ru]
     invoke: "vendors/.venv/bin/python vendors/humanizer-ru/skills/humanizer-ru/scripts/scan.py <file> --genre <essay|academic|news|marketing> --json"
-    deps: razdel, pymorphy3 (uv venv)
+    deps: razdel==0.5.0, pymorphy3==2.0.6 (uv venv)
     mode: audit-only scan.py; rewriting agents deliberately not invoked
     note: genre calibration is vendor-side and runs INSIDE the wrapper
-    vendor_exit: 0
+    vendor_exit: "0 clean / 1 findings"
 
   - name: im-not-ai
     source: git https://github.com/epoko77-ai/im-not-ai (MIT, 5.5k stars)
@@ -55,12 +36,7 @@ tools:
     output: "run_dir=/path risk_band=<low|…> risk_score=N route_hint=…"
     vendor_exit: 0
 
-  - name: vietnamese-humanizer
-    source: git https://github.com/longhang2004/vietnamese-humanizer (MIT)
-    sha: 611c6e9ed911897c8febffc056d62543d76ea411
-    dist: vietnamese-writing-skills, CLI viet-writing-lint (python>=3.11)
-    langs: [vi]
-    invoke: "vendors/.venv/bin/viet-writing-lint <file> --root vendors/vietnamese-humanizer --recursive --format json"
-    install: "uv pip install -e vendors/vietnamese-humanizer"
-    mode: heuristic surface linter (its own taxonomy ERROR/WARNING/…)
-    vendor_exit: "1 findings / 2 cannot-run"
+# REMOVED VENDORS (absorbed as data with attribution, config/dictionaries/):
+#   texthumanize (system CLI)   -> cliche/bureaucratic dictionaries (en/ru/ko/vi)
+#   Aboudjem/humanizer-skill    -> src/scanners/{metrics,vocabulary,tokenize}.js vendored
+#   longhang2004/vietnamese-humanizer -> vi-patterns.json (pattern catalog)
