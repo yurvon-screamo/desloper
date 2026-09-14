@@ -52,7 +52,7 @@ tools:
     output: "run_dir=/path risk_band=<low|…> risk_score=N route_hint=…"
     vendor_exit: 0
 
-  - name: viet-lint
+  - name: vietnamese-humanizer
     source: git https://github.com/longhang2004/vietnamese-humanizer (MIT)
     sha: 611c6e9ed911897c8febffc056d62543d76ea411
     dist: vietnamese-writing-skills, CLI viet-writing-lint (python>=3.11)
