@@ -60,6 +60,11 @@ export function triage(
       else if (f.tool === "avoid-ai-writing" && !["high", "critical"].includes(f.severity ?? "") && !gateBroken) {
         withPriority.priority = "P2";
       }
+      else if (f.severity === "weak") {
+        // Weak signals: bureaucratic phrases / connectors surfacing in
+        // repetition — structural rather than phrase-level slop.
+        withPriority.priority = "P2";
+      }
       else withPriority.priority = "P1"; // unknown categories default to visible P1
     }
     for (const rule of suppress) {

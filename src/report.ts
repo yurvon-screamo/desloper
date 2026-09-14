@@ -1,4 +1,4 @@
-import type { Finding, Report } from "./scanners/types.ts";
+import type { Report } from "./scanners/types.ts";
 
 /** Escape vendor/user-sourced strings for markdown safety. */
 function esc(s: string | null): string {

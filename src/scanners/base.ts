@@ -10,8 +10,9 @@ export interface Scanner {
   readonly langs: Lang[];
   /** Return true when this scanner's dependencies are available. */
   available(): Promise<boolean>;
-  /** Scan files (all of one language per call). */
-  scan(files: string[], lang: Lang): Promise<ScannerResult>;
+  /** Scan files (all of one language per call). contents is an optional
+   *  pre-read cache so built-in scanners avoid double file reads. */
+  scan(files: string[], lang: Lang, contents?: Map<string, string>): Promise<ScannerResult>;
 }
 
 /** Common helpers for subprocess scanners. */

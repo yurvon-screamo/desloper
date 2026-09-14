@@ -2,14 +2,11 @@
 
 ## What `--setup` executes
 
-- `git clone` of four MIT repositories into `vendors/`, checked out at the
-  commit SHAs recorded in config/tools.yaml (frozen pins, not branches).
-- `uv tool install texthumanize` (best-effort; warns with manual
-  instructions if it fails).
-- `uv venv` + `uv pip install` of: `razdel==0.3.1`, `pymorphy3==2.4.5` (RU morphology),
-  and `vietnamese-humanizer` in editable mode (`pip -e`) — which runs its
-  `setup.py`. This is the standard Python distribution mechanism; review the
-  repo before installing if your threat model requires it.
+- `git clone` of two actively-maintained MIT repositories into `vendors/`
+  (humanizer-ru, im-not-ai), checked out at the commit SHAs recorded in
+  config/tools.yaml (frozen pins, not branches).
+- `uv venv` + `uv pip install` of `razdel==0.5.0` and `pymorphy3==2.0.6`
+  (RU morphology). No editable installs.
 - `bun install` of `avoid-ai-writing-detector` (npm, version-pinned via
   package.json + bun.lock).
 

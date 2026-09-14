@@ -1,3 +1,4 @@
+/* Vendored verbatim from Aboudjem/humanizer-skill (MIT) @ a58df06 — do not edit; upstream: https://github.com/Aboudjem/humanizer-skill */
 'use strict';
 
 // Curated AI-vocabulary tells, mirroring the tiered vocabulary in SKILL.md.

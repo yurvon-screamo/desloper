@@ -20,10 +20,10 @@ export class MetricsScanner implements Scanner {
     return typeof metrics.scoreText === "function";
   }
 
-  async scan(files: string[], lang: Lang): Promise<ScannerResult> {
+  async scan(files: string[], lang: Lang, contents?: Map<string, string>): Promise<ScannerResult> {
     const findings: Finding[] = [];
     for (const file of files) {
-      const content = await Bun.file(file).text();
+      const content = contents?.get(file) ?? (await Bun.file(file).text());
       try {
         const res = metrics.scoreText(content);
         const score = res.score ?? 0;

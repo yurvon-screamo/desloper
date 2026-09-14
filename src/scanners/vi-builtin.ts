@@ -1,5 +1,5 @@
 import type { Finding, Lang } from "./types.ts";
-import { failedRun, type Scanner, type ScannerResult } from "./base.ts";
+import { type Scanner, type ScannerResult } from "./base.ts";
 import { join } from "node:path";
 
 /**
@@ -7,7 +7,9 @@ import { join } from "node:path";
  * vietnamese-humanizer (MIT, longhang2004) converted to JSON —
  * config/dictionaries/vi-patterns.json. Reports VI-HUM-* pattern ids
  * with line numbers; the vendor's taxonomy (finding_type/severity)
- * is preserved.
+ * is preserved. Python inline regex flags ((?m), (?s), (?i)) are
+ * converted to JS constructor flags; signals.phrases entries are
+ * matched as substrings (case-insensitive), same as the vendor CLI.
  */
 
 interface ViPattern {
@@ -16,7 +18,6 @@ interface ViPattern {
   finding_type?: string;
   severity?: string;
   signals?: { regex?: string[]; phrases?: string[] };
-  false_positive_risk?: Record<string, unknown>;
 }
 
 const ROOT = join(import.meta.dir, "../..");
@@ -31,6 +32,26 @@ async function loadPatterns(): Promise<ViPattern[]> {
   return cache;
 }
 
+/** Convert Python inline flags to JS RegExp flags; strip them from body. */
+function compilePyRegex(src: string): RegExp | null {
+  let flags = "g";
+  let body = src;
+  const inline = body.matchAll(/\(\?([msaix]+)\)/g);
+  for (const m of inline) {
+    for (const ch of m[1]) {
+      if (ch === "m" || ch === "i") flags += ch === "m" ? "m" : "i";
+      else if (ch === "s") flags += "s"; // dotAll
+      // x/a have no JS equivalent; drop silently (unused in catalog)
+    }
+  }
+  body = body.replace(/\(\?[msaix]+\)/g, "");
+  try {
+    return new RegExp(body, flags);
+  } catch {
+    return null;
+  }
+}
+
 export class ViBuiltinScanner implements Scanner {
   readonly name = "viet-lint";
   readonly langs: Lang[] = ["vi"];
@@ -43,42 +64,43 @@ export class ViBuiltinScanner implements Scanner {
     }
   }
 
-  async scan(files: string[], lang: Lang): Promise<ScannerResult> {
+  async scan(files: string[], lang: Lang, contents?: Map<string, string>): Promise<ScannerResult> {
     const patterns = (await loadPatterns()).filter((p) => (p.id ?? "").startsWith("VI-HUM"));
     const compiled = patterns
       .map((p) => {
-        const regexes = (p.signals?.regex ?? []).map((r) => {
-          try {
-            return new RegExp(r, "gi");
-          } catch {
-            return null;
-          }
-        });
-        return { p, regexes: regexes.filter((r): r is RegExp => r !== null) };
+        const regexes = (p.signals?.regex ?? [])
+          .map(compilePyRegex)
+          .filter((r): r is RegExp => r !== null);
+        const phrases = (p.signals?.phrases ?? []).map((s) => s.toLowerCase());
+        return { p, regexes, phrases };
       })
-      .filter(({ regexes }) => regexes.length > 0);
+      .filter(({ regexes, phrases }) => regexes.length + phrases.length > 0);
     const findings: Finding[] = [];
     for (const file of files) {
-      const content = await Bun.file(file).text();
+      const content = contents?.get(file) ?? (await Bun.file(file).text());
       const lines = content.split("\n");
-      for (const { p, regexes } of compiled) {
-        for (const re of regexes) {
-          for (let i = 0; i < lines.length; i++) {
+      for (const { p, regexes, phrases } of compiled) {
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          let matched = false;
+          for (const re of regexes) {
             re.lastIndex = 0;
-            const m = re.exec(lines[i]);
-            if (m) {
-              findings.push({
-                tool: this.name,
-                lang,
-                file,
-                line: i + 1,
-                severity: p.severity ?? null,
-                category: p.id,
-                quote: m[0].slice(0, 200),
-                priority: null,
-                fpSuppressed: false,
-                fpReason: null,
-              });
+            let m = re.exec(line);
+            while (m && !matched) {
+              findings.push(mk(this.name, lang, file, i + 1, p, m[0]));
+              matched = true;
+              re.lastIndex = 0;
+              m = re.exec(line.slice(re.lastIndex + m.index + m[0].length) ? line : "");
+              break;
+            }
+          }
+          if (!matched && phrases.length) {
+            const lower = line.toLowerCase();
+            for (const ph of phrases) {
+              if (lower.includes(ph)) {
+                findings.push(mk(this.name, lang, file, i + 1, p, ph));
+                break;
+              }
             }
           }
         }
@@ -89,4 +111,19 @@ export class ViBuiltinScanner implements Scanner {
       findings,
     };
   }
+}
+
+function mk(tool: string, lang: Lang, file: string, line: number, p: ViPattern, quote: string): Finding {
+  return {
+    tool,
+    lang,
+    file,
+    line,
+    severity: p.severity ?? null,
+    category: p.id,
+    quote: quote.slice(0, 200),
+    priority: null,
+    fpSuppressed: false,
+    fpReason: null,
+  };
 }

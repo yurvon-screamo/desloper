@@ -125,12 +125,12 @@ async function main() {
           ok: false,
           files: bucket.length,
           findings: 0,
-          error: "scanner not available — run `desloper --setup`",
+          error: "scanner not available (run `desloper --setup` for vendor scanners; built-in scanners ship with the repo)",
         });
         continue;
       }
       const list = bucket.map((b) => b.file);
-      const res = await scanner.scan(list, lang);
+      const res = await scanner.scan(list, lang, contents);
       toolRuns.push(res.run);
       allFindings.push(...res.findings);
     }
