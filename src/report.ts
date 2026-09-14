@@ -19,13 +19,13 @@ export function renderMarkdown(report: Report, uncertainFiles: string[] = []): s
   if (uncertainFiles.length) {
     lines.push(`> ℹ️ Language auto-detect was inconclusive for ${uncertainFiles.length} file(s); ` +
       `they were scanned with EN tools — use \`--lang\` to override:`);
-    for (const f of uncertainFiles.slice(0, 10)) lines.push(`> - ${f}`);
+    for (const f of uncertainFiles.slice(0, 10)) lines.push(`> - ${esc(f)}`);
     lines.push("");
   }
   if (s.tool_failures > 0) {
     lines.push(`> ⚠️ Some scanners failed — this audit is INCOMPLETE (exit 2):`);
     for (const r of report.tool_runs.filter((r) => !r.ok)) {
-      lines.push(`> - \`${r.tool}\`: ${r.error}`);
+      lines.push(`> - \`${esc(r.tool)}\`: ${esc(r.error)}`);
     }
     lines.push("");
   }

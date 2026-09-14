@@ -40,14 +40,14 @@ async function main() {
   let parsed;
   try {
     parsed = parseArgs({
-    args: Bun.argv.slice(2),
-    options: {
-      json: { type: "boolean" },
-      lang: { type: "string" },
-      setup: { type: "boolean" },
-      "dry-run": { type: "boolean" },
-      help: { type: "boolean" },
-    },
+      args: Bun.argv.slice(2),
+      options: {
+        json: { type: "boolean" },
+        lang: { type: "string" },
+        setup: { type: "boolean" },
+        "dry-run": { type: "boolean" },
+        help: { type: "boolean" },
+      },
       strict: true,
       allowPositionals: true,
     });
@@ -179,9 +179,13 @@ function collectFiles(paths: string[]): string[] {
       out.add(abs);
       continue;
     }
-    // directory or glob: take .md recursively
+    // directory or glob: take .md recursively; excluded dirs are pruned
+    // from the result set (Bun's glob has no traversal-level ignore yet,
+    // so node_modules is walked but filtered — documented tradeoff)
     const dirGlob = join(abs, "**/*.md");
-    for (const f of globSync(dirGlob)) if (!isExcluded(f)) out.add(f);
+    for (const f of globSync(dirGlob)) {
+      if (!isExcluded(f)) out.add(f);
+    }
   }
   return [...out].sort();
 }

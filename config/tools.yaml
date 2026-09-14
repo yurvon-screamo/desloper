@@ -26,7 +26,7 @@ tools:
     vendor_exit: 0
 
   - name: humanizer-skill
-    source: git Aboudjem/humanizer-skill (MIT)
+    source: git https://github.com/Aboudjem/humanizer-skill (MIT)
     sha: a58df065367550b6ce40ff3f648335018d8e0589
     langs: [en]
     invoke: "node vendors/humanizer-skill/cli/index.js score <file>"
@@ -34,7 +34,7 @@ tools:
     vendor_exit: "0 ok / 1 findings"
 
   - name: humanizer-ru
-    source: git ilyautov/humanizer-ru (MIT)
+    source: git https://github.com/ilyautov/humanizer-ru (MIT)
     sha: 7fed91f99700a937b82e0c32094872ba8a5843da
     langs: [ru]
     invoke: "vendors/.venv/bin/python vendors/humanizer-ru/skills/humanizer-ru/scripts/scan.py <file> --genre <essay|academic|news|marketing> --json"
@@ -44,7 +44,7 @@ tools:
     vendor_exit: 0
 
   - name: im-not-ai
-    source: git epoko77-ai/im-not-ai (MIT, 5.5k stars)
+    source: git https://github.com/epoko77-ai/im-not-ai (MIT, 5.5k stars)
     sha: 9747f036cdc28a1a8aea4dc71fef1f7846eb96f7
     langs: [ko]
     invoke: "vendors/.venv/bin/python vendors/im-not-ai/scripts/prepare_monolith_input.py --run-dir <tmp-with-01_input.txt> --genre essay"
@@ -53,8 +53,9 @@ tools:
     vendor_exit: 0
 
   - name: viet-lint
-    source: git longhang2004/vietnamese-humanizer (MIT); dist
-    sha: 611c6e9ed911897c8febffc056d62543d76ea411 vietnamese-writing-skills, CLI viet-writing-lint (python>=3.11)
+    source: git https://github.com/longhang2004/vietnamese-humanizer (MIT)
+    sha: 611c6e9ed911897c8febffc056d62543d76ea411
+    dist: vietnamese-writing-skills, CLI viet-writing-lint (python>=3.11)
     langs: [vi]
     invoke: "vendors/.venv/bin/viet-writing-lint <file> --root vendors/vietnamese-humanizer --recursive --format json"
     install: "uv pip install -e vendors/vietnamese-humanizer"

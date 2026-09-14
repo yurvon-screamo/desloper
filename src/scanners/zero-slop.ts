@@ -33,6 +33,9 @@ export class ZeroSlopScanner implements Scanner {
         for (const hit of doc.hits ?? []) {
           issues.push(`[${hit.cat}/${hit.name}] ${hit.quote ?? ""}`);
         }
+        // 25 = zero-slop's own gate value on its writing-score scale:
+        // structural flags only surface above it; below it, concrete
+        // hits carry the signal.
         const likelihood = doc.ai_likelihood ?? 0;
         if (likelihood >= 25 || issues.length > 0) {
           for (const q of issues) {

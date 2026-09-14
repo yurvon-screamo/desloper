@@ -14,7 +14,7 @@ export const P0_PATTERNS: RegExp[] = [
   /\bLorem ipsum\b/i,
 ];
 
-export function scanP0(file: string, content: string, lang: Lang): { run: ToolRun; findings: Finding[] } {
+export function scanP0(file: string, content: string, lang: Lang, files = 1): { run: ToolRun; findings: Finding[] } {
   const findings: Finding[] = [];
   const lines = content.split("\n");
   for (const re of P0_PATTERNS) {
@@ -40,7 +40,7 @@ export function scanP0(file: string, content: string, lang: Lang): { run: ToolRu
     }
   }
   return {
-    run: { tool: "desloper", ok: true, files: 1, findings: findings.length, error: null },
+    run: { tool: "desloper", ok: true, files, findings: findings.length, error: null },
     findings,
   };
 }

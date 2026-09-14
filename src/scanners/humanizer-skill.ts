@@ -35,6 +35,8 @@ export class HumanizerSkillScanner implements Scanner {
       }
       const scoreMatch = stdout.match(/Score:\s*([\d.]+)\/100/);
       if (!scoreMatch) continue;
+      // 30 = humanizer's "Mixed" band floor (its docs: below reads as
+      // human-ish); 50+ is its "Pure AI smell" band.
       const score = Number(scoreMatch[1]);
       if (score >= 30) {
         const signals = [...stdout.matchAll(/^\s+(\w+)\s+([\d.]+).*$/gm)]

@@ -15,17 +15,26 @@ run() { # run <label> <cmd...> — respects DRY_RUN, never partially executes
 # Vendors pinned to commit SHAs recorded in config/tools.yaml (SSOT).
 # Setup reads pins from there; unpinned installs fail loudly.
 VENDORS_YAML="$ROOT/config/tools.yaml"
-vendor_pins() {  # emit name|repo|sha lines from tools.yaml
-  awk '/^  - name:/{name=$3} /^    source: git /{repo=$3} /^    sha:/{print name"|"repo"|"$2}' "$VENDORS_YAML"
+vendor_pins() {  # emit name|url|sha lines from tools.yaml; missing sha = error
+  awk '
+    /^  - name:/ {name=$3}
+    /^    source: git / {url=$3}
+    /^    sha:/ {
+      if (name == "" || url == "" || $2 !~ /^[0-9a-f]{40}$/) {
+        print "ERROR: vendor entry without name/url/40-char sha: " name > "/dev/stderr"; exit 1
+      }
+      print name"|"url"|"$2; name=""; url=""
+    }
+  ' "$VENDORS_YAML"
 }
 while IFS='|' read -r name repo sha; do
   [ -z "$name" ] && continue
   dir="$ROOT/vendors/$name"
   if [ -d "$dir/.git" ]; then
-    run "checkout $name @ $sha" git -C "$dir" fetch --quiet origin "$sha"
+    run "fetch $name @ $sha" git -C "$dir" fetch --quiet origin "$sha"
     run "pin $name @ $sha" git -C "$dir" checkout --quiet --force "$sha"
   else
-    run "clone $name ($sha)" git clone --quiet "$repo" "$dir"
+    run "clone $name @ $sha" git clone --quiet "$repo" "$dir"
     run "pin $name" git -C "$dir" checkout --quiet --force "$sha"
   fi
 done < <(vendor_pins)

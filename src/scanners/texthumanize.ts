@@ -31,6 +31,8 @@ export class TextHumanizeScanner implements Scanner {
         const docs = parseConcatenatedJson(stdout);
         const doc = docs[0] as TexthumanizeJson | undefined;
         if (!doc) continue;
+        // 0.05 = ai_patterns density floor: below it a "mixed" verdict is
+        // genre noise (formal register); above it phrase-level slop is real.
         const aiPatterns = doc.metrics?.ai_patterns ?? 0;
         if (doc.verdict === "ai" || doc.verdict === "mixed" || aiPatterns > 0.05) {
           findings.push({
