@@ -1,0 +1,32 @@
+# desloper per-project false-positive layer.
+# This file is a live example: it suppresses findings that are correct
+# for THIS repository's genre (technical documentation, not marketing).
+
+suppress:
+  # Em-dashes are legitimate typographic convention in technical docs
+  # (unlike marketing landing pages where they were purged in the series)
+  - category: em-dash
+    file: "**/*.md"
+    reason: "Technical documentation: em-dash is standard typographic convention"
+  # This file documents false positives — the FP examples it cites will match
+  - file: "**/docs/false-positives.md"
+    reason: "This file documents FP examples; quoted phrases are illustrative"
+  # Rewrite-rules dictionary quotes the very phrases it teaches to replace
+  - file: "**/docs/rewrite-rules.md"
+    reason: "Dictionary of replacement patterns; phrases are examples"
+  # Mirrors doc contains multi-locale example strings (RU/KO/VI)
+  - file: "**/docs/mirrors.md"
+    category: normalization-flag
+    reason: "Multi-locale documentation: CJK/Cyrillic text triggers homoglyph detector"
+  - file: "**/docs/mirrors.md"
+    category: formatting
+    reason: "Doc uses bold for locale-file pairs (en.rs/ru.rs/ko.rs) — structural reference, not emphasis"
+  - file: "**/docs/mirrors.md"
+    category: punct-distribution
+    reason: "Short doc with code-block examples: uniform punctuation is genre artifact"
+  # Dictionaries README documents absorbed upstream data
+  - file: "**/config/dictionaries/README.md"
+    reason: "Attribution table; phrases are upstream data references"
+  # README quotes P0 placeholder examples and cliche examples in its docs
+  - file: "**/README.md"
+    reason: "README documents what desloper catches; example phrases are illustrative"
