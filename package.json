@@ -1,0 +1,20 @@
+{
+  "name": "desloper",
+  "version": "0.1.0",
+  "description": "Multilingual AI-slop auditor: orchestrates ready-made detectors (EN/RU/KO/VI) and triages findings against a false-positive map distilled from production deslop series.",
+  "type": "module",
+  "module": "src/cli.ts",
+  "bin": { "desloper": "./src/cli.ts" },
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "bun src/cli.ts",
+    "test": "bun test tests/"
+  },
+  "dependencies": {
+    "avoid-ai-writing-detector": "3.35.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

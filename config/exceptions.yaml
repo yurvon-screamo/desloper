@@ -1,0 +1,29 @@
+# desloper global false-positive base — distilled from the Origa production
+# deslop series (5 PR cycles, 3 review iterations). Projects layer their own
+# .desloper.yaml ON TOP of this file; suppression can only downgrade.
+
+suppress:
+  # SEO convention "Brand — Descriptor" in <title> tags / meta titles
+  - file: "**/*.md"
+    category: em-dash
+    quoteContains: "meta_title"
+    reason: "SEO title convention (Brand — Descriptor), series-approved"
+  # Range dashes are typographic norm: "N5–N1", "30–45 minutes"
+  - category: em-dash
+    quoteContains: "–"
+    reason: "en-dash numeric range, typographic norm"
+  # UI button names flagged as bold/key-takeaway patterns
+  - category: formatting
+    quoteContains: "Remember"
+    reason: "UI button name, not emphasis"
+  - category: formatting
+    quoteContains: "Know"
+    reason: "UI button name, not emphasis"
+  # Vendor-tool own noise on markdown plumbing
+  - category: ai-placeholder
+    quoteContains: "disable-file"
+    reason: "markdownlint HTML comment, not rendered"
+  # Country-flag emoji switchers inflate emoji-decor scores
+  - tool: zero-slop
+    quoteContains: "🇬🇧"
+    reason: "language-switcher flag emoji (series README case, evidence low)"

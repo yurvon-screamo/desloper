@@ -1,0 +1,38 @@
+name: ci
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: astral-sh/setup-uv@v5
+      - run: |
+          sudo apt-get update && sudo apt-get install -y pipx
+          pipx install texthumanize && echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: bun install --frozen-lockfile
+      - run: bun src/cli.ts --setup
+      - name: Golden fixtures audit
+        run: |
+          bun src/cli.ts tests/fixtures --json > report.json
+          jq -e '.summary.tool_failures == 0' report.json
+          jq -e '.summary.p0 == 1' report.json
+          jq -e '[.tool_runs[] | select(.tool=="im-not-ai") | .findings] | add >= 1' report.json
+          jq -e '[.tool_runs[] | select(.tool=="humanizer-ru") | .findings] | add >= 5' report.json
+          jq -e '[.tool_runs[] | select(.tool=="viet-lint") | .findings] | add >= 3' report.json

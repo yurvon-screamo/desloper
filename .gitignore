@@ -1,0 +1,4 @@
+node_modules/
+vendors/
+.desloper.yaml.bak
+*.log

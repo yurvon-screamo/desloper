@@ -1,0 +1,58 @@
+# desloper tools map — the scanner contract (scanner -> source -> lang -> invocation).
+# This file is documentation-as-config; setup-vendors.sh mirrors it.
+
+tools:
+  - name: texthumanize
+    source: system CLI (https://github.com/… texthumanize, pipx/uv tool)
+    langs: [en, ru, ko, vi]
+    invoke: "texthumanize --detect-ai --json -l <lang> <file>"
+    mode: inspect-only (--detect-ai locked; rewriting modes deliberately inaccessible)
+    note: language always forced — auto-detect confuses vi with fr
+    vendor_exit: 0
+
+  - name: avoid-ai-writing
+    source: npm avoid-ai-writing-detector@3.35.0 (pinned + bun.lock)
+    langs: [en]
+    invoke: "bin --source-mode rendered-markdown --context technical <file>"
+    mode: detect-only; gate convention threshold=6 findings/file
+    vendor_exit: "0 ok / 2 usage-IO"
+
+  - name: zero-slop
+    source: npx zero-slop@2.12.1 (pinned)
+    langs: [en]
+    invoke: "npx --yes zero-slop@2.12.1 score <file> --json"
+    mode: local scorer only (hosted MCP editing deliberately not used)
+    note: catches contrast formulas introduced by dash->period rewrites
+    vendor_exit: 0
+
+  - name: humanizer-skill
+    source: git Aboudjem/humanizer-skill@main (MIT)
+    langs: [en]
+    invoke: "node vendors/humanizer-skill/cli/index.js score <file>"
+    mode: metrics only; compare --check-facts is a docs/workflow.md recipe
+    vendor_exit: "0 ok / 1 findings"
+
+  - name: humanizer-ru
+    source: git ilyautov/humanizer-ru@main (MIT)
+    langs: [ru]
+    invoke: "vendors/.venv/bin/python vendors/humanizer-ru/skills/humanizer-ru/scripts/scan.py <file> --genre <essay|academic|news|marketing> --json"
+    deps: razdel, pymorphy3 (uv venv)
+    mode: audit-only scan.py; rewriting agents deliberately not invoked
+    note: genre calibration is vendor-side and runs INSIDE the wrapper
+    vendor_exit: 0
+
+  - name: im-not-ai
+    source: git epoko77-ai/im-not-ai@main (MIT, 5.5k stars)
+    langs: [ko]
+    invoke: "vendors/.venv/bin/python vendors/im-not-ai/scripts/prepare_monolith_input.py --text <content> --genre essay"
+    mode: deterministic shim ONLY (stdlib); LLM routes (light/standard/heavy) deliberately never invoked
+    output: "run_dir=/path risk_band=<low|…> risk_score=N route_hint=…"
+    vendor_exit: 0
+
+  - name: viet-lint
+    source: git longhang2004/vietnamese-humanizer@main (MIT); dist vietnamese-writing-skills, CLI viet-writing-lint (python>=3.11)
+    langs: [vi]
+    invoke: "vendors/.venv/bin/viet-writing-lint <file> --root vendors/vietnamese-humanizer --recursive --format json"
+    install: "uv pip install -e vendors/vietnamese-humanizer"
+    mode: heuristic surface linter (its own taxonomy ERROR/WARNING/…)
+    vendor_exit: "1 findings / 2 cannot-run"
