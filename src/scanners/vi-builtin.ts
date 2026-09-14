@@ -32,8 +32,9 @@ async function loadPatterns(): Promise<ViPattern[]> {
   return cache;
 }
 
-/** Convert Python inline flags to JS RegExp flags; strip them from body. */
-function compilePyRegex(src: string): RegExp | null {
+/** Convert Python inline flags to JS RegExp flags; strip them from body.
+ *  Exported for the catalog compile-guard test. */
+export function compilePyRegex(src: string): RegExp | null {
   const flagSet = new Set<string>(["g"]);
   const body = src.replace(/\(\?([msaix]+)\)/g, (_all, chars: string) => {
     for (const ch of chars) {

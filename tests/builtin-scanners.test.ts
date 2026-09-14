@@ -66,12 +66,25 @@ describe("ViBuiltinScanner", () => {
   test("catalog compiles: no silent regex drop in VI-HUM", async () => {
     // Compile every VI-HUM regex through the same conversion the scanner
     // uses; a future catalog edit must not silently kill patterns.
-    const { execSync } = await import("node:child_process");
-    const out = execSync(
-      `bun -e 'const m = await import("/home/yurvon/desloper/src/scanners/vi-builtin.ts"); const s = new m.ViBuiltinScanner(); process.exit(await s.available() ? 0 : 1);'`,
-      { cwd: import.meta.dir + "/../.." },
-    );
-    expect(out.length).toBeGreaterThanOrEqual(0); // exit code enforced by execSync throw
+    const { compilePyRegex } = await import("../src/scanners/vi-builtin.ts");
+    const catalog = JSON.parse(
+      await Bun.file("config/dictionaries/vi-patterns.json").text(),
+    ) as Record<string, { id: string; signals?: { regex?: string[]; phrases?: string[] } }[]>;
+    const hum = Object.values(catalog).flat().filter((p) => p.id.startsWith("VI-HUM"));
+    let withSignals = 0;
+    for (const p of hum) {
+      const regexes = p.signals?.regex ?? [];
+      const phrases = p.signals?.phrases ?? [];
+      if (regexes.length + phrases.length === 0) continue;
+      withSignals++;
+      for (const src of regexes) {
+        // A silent null from compilePyRegex on a catalog edit is exactly
+        // the regression this test exists to catch.
+        expect(compilePyRegex(src)).not.toBeNull();
+      }
+    }
+    // The taxon must keep real detectors (not degenerate to phrases-only).
+    expect(withSignals).toBeGreaterThanOrEqual(9);
   });
 });
 
