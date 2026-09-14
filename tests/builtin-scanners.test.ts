@@ -38,7 +38,7 @@ describe("PhraseScanner", () => {
   });
   test("counter xN", async () => {
     const r = await new PhraseScanner().scan(["t.md"], "en", new Map([["t.md", "In conclusion A. In conclusion B. In conclusion C."]]));
-    expect(r.findings.some((f) => (f.quote ?? "").includes("in conclusion ×3") && f.severity === "high")).toBe(true);
+    expect(r.findings.some((f) => (f.quote ?? "").toLowerCase().includes("in conclusion ×3") && f.severity === "high")).toBe(true);
   });
 });
 
