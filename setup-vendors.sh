@@ -54,7 +54,7 @@ step "python venv (uv) for RU/KO/VI scanners"
 VENV="$ROOT/vendors/.venv"
 if [ "$DRY_RUN" != "true" ]; then
   [ -d "$VENV" ] || uv venv "$VENV" --quiet
-  uv pip install --python "$VENV/bin/python" --quiet "razdel==0.3.1" "pymorphy3==2.4.5"
+  uv pip install --python "$VENV/bin/python" --quiet "razdel==0.5.0" "pymorphy3==2.0.6"
   uv pip install --python "$VENV/bin/python" --quiet -e "$ROOT/vendors/vietnamese-humanizer"
 fi
 
