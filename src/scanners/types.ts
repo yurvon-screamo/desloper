@@ -47,11 +47,3 @@ export interface Report {
   };
 }
 
-export interface ScanContext {
-  /** Absolute paths of files to scan. */
-  files: string[];
-  /** Forced language override (--lang), applied to all files. */
-  langOverride: Lang | null;
-  /** Files whose auto-detected language was inconclusive (EN fallback). */
-  uncertain: string[];
-}

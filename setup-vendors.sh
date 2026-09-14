@@ -12,37 +12,23 @@ run() { # run <label> <cmd...> — respects DRY_RUN, never partially executes
   if [ "$DRY_RUN" != "true" ]; then "$@"; fi
 }
 
-# Vendors pinned to commit SHAs (see docs/trust.md: floating branch is not a pin).
-vendors=(
-  # name|repo|sha
-  "humanizer-skill|https://github.com/Aboudjem/humanizer-skill|PIN_ME"
-  "humanizer-ru|https://github.com/ilyautov/humanizer-ru|PIN_ME"
-  "im-not-ai|https://github.com/epoko77-ai/im-not-ai|PIN_ME"
-  "vietnamese-humanizer|https://github.com/longhang2004/vietnamese-humanizer|PIN_ME"
-)
-
-for v in "${vendors[@]}"; do
-  IFS='|' read -r name repo sha <<< "$v"
+# Vendors pinned to commit SHAs recorded in config/tools.yaml (SSOT).
+# Setup reads pins from there; unpinned installs fail loudly.
+VENDORS_YAML="$ROOT/config/tools.yaml"
+vendor_pins() {  # emit name|repo|sha lines from tools.yaml
+  awk '/^  - name:/{name=$3} /^    source: git /{repo=$3} /^    sha:/{print name"|"repo"|"$2}' "$VENDORS_YAML"
+}
+while IFS='|' read -r name repo sha; do
+  [ -z "$name" ] && continue
   dir="$ROOT/vendors/$name"
-  if [ "$sha" = "PIN_ME" ]; then
-    # Resolve HEAD once at setup time and freeze it in place for this clone.
-    if [ ! -f "$dir/.desloper-pin" ]; then
-      step "resolve HEAD for $name (pinned on first setup)"
-      if [ "$DRY_RUN" != "true" ]; then
-        if [ ! -d "$dir/.git" ]; then git clone --quiet "$repo" "$dir"; fi
-        git -C "$dir" rev-parse HEAD > "$dir/.desloper-pin"
-      fi
-    fi
-    [ -f "$dir/.desloper-pin" ] && sha="$(cat "$dir/.desloper-pin")"
-  fi
   if [ -d "$dir/.git" ]; then
-    run "update $name @ $sha" git -C "$dir" fetch --quiet origin "$sha"
-    run "checkout $name @ $sha" git -C "$dir" checkout --quiet --force "$sha"
+    run "checkout $name @ $sha" git -C "$dir" fetch --quiet origin "$sha"
+    run "pin $name @ $sha" git -C "$dir" checkout --quiet --force "$sha"
   else
-    run "clone $name @ $sha" git clone --quiet "$repo" "$dir"
+    run "clone $name ($sha)" git clone --quiet "$repo" "$dir"
     run "pin $name" git -C "$dir" checkout --quiet --force "$sha"
   fi
-done
+done < <(vendor_pins)
 
 step "texthumanize (system CLI, best-effort via uv tool)"
 if ! command -v texthumanize >/dev/null 2>&1; then
@@ -59,8 +45,7 @@ step "python venv (uv) for RU/KO/VI scanners"
 VENV="$ROOT/vendors/.venv"
 if [ "$DRY_RUN" != "true" ]; then
   [ -d "$VENV" ] || uv venv "$VENV" --quiet
-  uv pip install --python "$VENV/bin/python" --quiet "razdel==0.3.1" "pymorphy3==2.4.5" || \
-    uv pip install --python "$VENV/bin/python" --quiet razdel pymorphy3
+  uv pip install --python "$VENV/bin/python" --quiet "razdel==0.3.1" "pymorphy3==2.4.5"
   uv pip install --python "$VENV/bin/python" --quiet -e "$ROOT/vendors/vietnamese-humanizer"
 fi
 

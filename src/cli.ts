@@ -37,7 +37,9 @@ Options:
 }
 
 async function main() {
-  const { values, positionals } = parseArgs({
+  let parsed;
+  try {
+    parsed = parseArgs({
     args: Bun.argv.slice(2),
     options: {
       json: { type: "boolean" },
@@ -46,9 +48,16 @@ async function main() {
       "dry-run": { type: "boolean" },
       help: { type: "boolean" },
     },
-    strict: true,
-    allowPositionals: true,
-  });
+      strict: true,
+      allowPositionals: true,
+    });
+  } catch (e) {
+    // Unknown flag / usage error must be exit 3, never a stack trace
+    // (exit 1 means "findings present").
+    console.error(String(e));
+    usage(3);
+  }
+  const { values, positionals } = parsed;
   if (values.help) usage(0);
   const langOverride = (values.lang as Lang | undefined) ?? null;
   if (langOverride && !["en", "ru", "ko", "vi"].includes(langOverride)) {
@@ -82,8 +91,10 @@ async function main() {
   // Group files by language; vendor-independent P0 scan runs on raw content.
   const byLang = new Map<Lang, { file: string; confident: boolean }[]>();
   const uncertainFiles: string[] = [];
+  const contents = new Map<string, string>();
   for (const file of files) {
     const content = await Bun.file(file).text();
+    contents.set(file, content);
     const lang = langOverride ?? detectLang(file, content);
     const bucket = byLang.get(lang) ?? [];
     const confident = isConfident(file, content);
@@ -99,8 +110,7 @@ async function main() {
     // vendor scanner reports the file as clean.
     let p0Count = 0;
     for (const { file } of bucket) {
-      const content = await Bun.file(file).text();
-      const res = scanP0(file, content, lang);
+      const res = scanP0(file, contents.get(file) ?? "", lang);
       p0Count += res.findings.length;
       allFindings.push(...res.findings);
     }

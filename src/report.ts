@@ -1,5 +1,10 @@
 import type { Finding, Report } from "./scanners/types.ts";
 
+/** Escape vendor/user-sourced strings for markdown safety. */
+function esc(s: string | null): string {
+  return (s ?? "").replace(/[\n\r]+/g, " \u23ce ").replace(/([*_`#>|])/g, "\\$1");
+}
+
 /** Render the human-readable markdown report to stdout. */
 export function renderMarkdown(report: Report, uncertainFiles: string[] = []): string {
   const lines: string[] = [];
@@ -32,10 +37,10 @@ export function renderMarkdown(report: Report, uncertainFiles: string[] = []): s
     lines.push(`## ${prio} — ${group.length}`);
     lines.push("");
     for (const f of group) {
-      const quote = (f.quote ?? "").replace(/[\n\r]+/g, " ⏎ ").replace(/([*_`#>|])/g, "\\$1");
+      const quote = esc(f.quote);
       lines.push(
-        `- **${f.file}${f.line != null ? `:${f.line}` : ""}** ` +
-          `[\`${f.tool}\`/\`${f.category ?? "?"}\`${f.severity ? ` ${f.severity}` : ""}] ${quote}`,
+        `- **${esc(f.file)}${f.line != null ? `:${f.line}` : ""}** ` +
+          `[\`${esc(f.tool)}\`/\`${esc(f.category ?? "?")}\`${f.severity ? ` ${esc(f.severity)}` : ""}] ${quote}`,
       );
     }
     lines.push("");
@@ -44,7 +49,7 @@ export function renderMarkdown(report: Report, uncertainFiles: string[] = []): s
     lines.push(`## Suppressed as documented false positives — ${suppressed.length}`);
     lines.push("");
     for (const f of suppressed) {
-      lines.push(`- ${f.file} [\`${f.tool}\`/\`${f.category ?? "?"}\`]: ${f.fpReason}`);
+      lines.push(`- ${esc(f.file)} [\`${esc(f.tool)}\`/\`${esc(f.category ?? "?")}\`]: ${esc(f.fpReason)}`);
     }
     lines.push("");
   }

@@ -61,10 +61,10 @@ function setKey(cur: Partial<SuppressRule>, key: string, value: string) {
 
 export async function loadSuppressRules(builtinPath: string, projectPath: string): Promise<SuppressRule[]> {
   const rules: SuppressRule[] = [];
-  for (const [p, label] of [[builtinPath, "builtin"], [projectPath, "project"]] as const) {
+  for (const p of [builtinPath, projectPath]) {
     const f = Bun.file(p);
     if (!(await f.exists())) continue;
-    rules.push(...parseSuppressYaml(await f.text(), label === "builtin" ? p : p));
+    rules.push(...parseSuppressYaml(await f.text(), p));
   }
   return rules;
 }

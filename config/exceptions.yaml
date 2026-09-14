@@ -27,3 +27,9 @@ suppress:
   - tool: zero-slop
     quoteContains: "🇬🇧"
     reason: "language-switcher flag emoji (series README case, evidence low)"
+  # Russian typographic norm — never purge RU dashes by EN rules
+  # (moved from scanner hardcode: per-project overridable now)
+  - category: "ru:Длинное тире"
+    reason: "Long dash is standard Russian punctuation (series-approved)"
+  - category: "ru:Короткое тире"
+    reason: "Short dash / en-dash ranges are typographic norm"

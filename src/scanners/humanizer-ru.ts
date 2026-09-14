@@ -42,7 +42,6 @@ export class HumanizerRuScanner implements Scanner {
         if (!doc) continue;
         for (const m of doc.markers ?? []) {
           const [category, quote, count] = m;
-          if (category === "Длинное тире" || category === "Короткое тире") continue; // typographic norm (docs/false-positives.md)
           findings.push({
             tool: this.name,
             lang,

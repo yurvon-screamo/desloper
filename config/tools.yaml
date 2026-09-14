@@ -14,7 +14,7 @@ tools:
     source: npm avoid-ai-writing-detector@3.35.0 (pinned + bun.lock)
     langs: [en]
     invoke: "bin --source-mode rendered-markdown --context technical <file>"
-    mode: detect-only; gate convention threshold=6 findings/file
+    mode: detect-only; per-file gate: >6 findings upgrades sub-high severities to P1 (triage.ts)
     vendor_exit: "0 ok / 2 usage-IO"
 
   - name: zero-slop
@@ -26,14 +26,16 @@ tools:
     vendor_exit: 0
 
   - name: humanizer-skill
-    source: git Aboudjem/humanizer-skill@main (MIT)
+    source: git Aboudjem/humanizer-skill (MIT)
+    sha: a58df065367550b6ce40ff3f648335018d8e0589
     langs: [en]
     invoke: "node vendors/humanizer-skill/cli/index.js score <file>"
     mode: metrics only; compare --check-facts is a docs/workflow.md recipe
     vendor_exit: "0 ok / 1 findings"
 
   - name: humanizer-ru
-    source: git ilyautov/humanizer-ru@main (MIT)
+    source: git ilyautov/humanizer-ru (MIT)
+    sha: 7fed91f99700a937b82e0c32094872ba8a5843da
     langs: [ru]
     invoke: "vendors/.venv/bin/python vendors/humanizer-ru/skills/humanizer-ru/scripts/scan.py <file> --genre <essay|academic|news|marketing> --json"
     deps: razdel, pymorphy3 (uv venv)
@@ -42,15 +44,17 @@ tools:
     vendor_exit: 0
 
   - name: im-not-ai
-    source: git epoko77-ai/im-not-ai@main (MIT, 5.5k stars)
+    source: git epoko77-ai/im-not-ai (MIT, 5.5k stars)
+    sha: 9747f036cdc28a1a8aea4dc71fef1f7846eb96f7
     langs: [ko]
-    invoke: "vendors/.venv/bin/python vendors/im-not-ai/scripts/prepare_monolith_input.py --text <content> --genre essay"
+    invoke: "vendors/.venv/bin/python vendors/im-not-ai/scripts/prepare_monolith_input.py --run-dir <tmp-with-01_input.txt> --genre essay"
     mode: deterministic shim ONLY (stdlib); LLM routes (light/standard/heavy) deliberately never invoked
     output: "run_dir=/path risk_band=<low|…> risk_score=N route_hint=…"
     vendor_exit: 0
 
   - name: viet-lint
-    source: git longhang2004/vietnamese-humanizer@main (MIT); dist vietnamese-writing-skills, CLI viet-writing-lint (python>=3.11)
+    source: git longhang2004/vietnamese-humanizer (MIT); dist
+    sha: 611c6e9ed911897c8febffc056d62543d76ea411 vietnamese-writing-skills, CLI viet-writing-lint (python>=3.11)
     langs: [vi]
     invoke: "vendors/.venv/bin/viet-writing-lint <file> --root vendors/vietnamese-humanizer --recursive --format json"
     install: "uv pip install -e vendors/vietnamese-humanizer"

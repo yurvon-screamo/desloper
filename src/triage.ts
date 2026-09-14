@@ -1,11 +1,14 @@
 import type { Finding } from "./scanners/types.ts";
 
+import { P0_PATTERNS } from "./scanners/p0.ts";
+
 /**
  * Triage pipeline (vendor calibration already applied inside scanner
- * wrappers). Order: P0 detection -> P1/P2 classification -> suppression
- * rules. Suppression can only downgrade, never resurrect a finding the
- * vendor's own calibration dropped (known limitation, see
- * docs/false-positives.md).
+ * wrappers). Order: P0 detection -> gate check -> P1/P2 classification
+ * -> suppression rules. Suppression can only downgrade, never resurrect
+ * a finding the vendor's own calibration dropped (known limitation,
+ * see docs/false-positives.md). P0 patterns live in scanners/p0.ts —
+ * single source for both the vendor-independent scanner and triage.
  */
 
 export interface SuppressRule {
@@ -18,13 +21,6 @@ export interface SuppressRule {
   reason: string;
 }
 
-/** Placeholder/broken-word patterns that are P0 regardless of tool. */
-const P0_PATTERNS: RegExp[] = [
-  /\[your [a-z ]+\]/i, // unfilled template placeholder: "[your language]"
-  /\bINSERT [A-Z ]+\b/,
-  /\bLorem ipsum\b/i,
-];
-
 /** P1: phrase-level AI tells. P2: structural/rhythm. */
 const P1_CATEGORIES = new Set([
   "tier1", "tier1-clarity", "em-dash", "bullet-np-list", "performed-insight",
@@ -35,21 +31,33 @@ const P1_CATEGORIES = new Set([
 const P1_CATEGORY_PREFIXES = ["ru:", "VI-HUM"];
 const P2_CATEGORIES = new Set(["linkedin", "triads", "rhythm", "scaffolding"]);
 
+/** Upstream corpus calibration: aaw allows up to 6 findings per file. */
+const AAW_GATE = 6;
+
 export function triage(
   findings: Finding[],
   suppress: SuppressRule[],
 ): Finding[] {
+  // aaw per-file gate: a file exceeding AAW_GATE findings is itself a
+  // signal — its sub-high severities are upgraded back to P1.
+  const aawPerFile = new Map<string, number>();
+  for (const f of findings) {
+    if (f.tool === "avoid-ai-writing") {
+      aawPerFile.set(f.file, (aawPerFile.get(f.file) ?? 0) + 1);
+    }
+  }
   return findings.map((f) => {
     const withPriority = { ...f };
+    const gateBroken = f.tool === "avoid-ai-writing" &&
+      (aawPerFile.get(f.file) ?? 0) > AAW_GATE;
     if (f.priority == null) {
       if (P0_PATTERNS.some((re) => re.test(f.quote ?? ""))) withPriority.priority = "P0";
       else if (f.category && P1_CATEGORIES.has(f.category)) withPriority.priority = "P1";
       else if (f.category && P1_CATEGORY_PREFIXES.some((p) => f.category!.startsWith(p))) withPriority.priority = "P1";
       else if (f.category && P2_CATEGORIES.has(f.category)) withPriority.priority = "P2";
-      // Gate convention (upstream corpus calibration): aaw findings below
-      // high severity are noise-adjacent unless the per-file count exceeds
-      // the 6-findings gate — downgrade to P2, keep visible.
-      else if (f.tool === "avoid-ai-writing" && !["high", "critical"].includes(f.severity ?? "")) {
+      // Sub-high aaw findings are noise-adjacent P2 — unless the file
+      // breaks the upstream 6-findings gate, then everything is P1.
+      else if (f.tool === "avoid-ai-writing" && !["high", "critical"].includes(f.severity ?? "") && !gateBroken) {
         withPriority.priority = "P2";
       }
       else withPriority.priority = "P1"; // unknown categories default to visible P1
@@ -76,7 +84,7 @@ function globToRegex(pattern: string): RegExp | null {
   const final = escaped
     .replace(/\*/g, "[^/]*")
     .replace(/\u0000/g, ".*")
-    .replace(/\?/g, ".");
+    .replace(/\?/g, "[^/]");
   try {
     return new RegExp("^" + final + "$");
   } catch {

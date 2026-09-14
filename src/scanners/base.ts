@@ -33,11 +33,12 @@ export async function runCmd(
     return { code: -1, stdout: "", stderr: `Executable not found: ${cmd[0]} (${e})` };
   }
   let killed = false;
+  let killTimer: ReturnType<typeof setTimeout> | undefined;
   const timer = opts.timeoutMs
     ? setTimeout(() => {
         killed = true;
         proc.kill(); // SIGTERM first
-        setTimeout(() => proc.kill(9), 5_000); // SIGKILL escalation
+        killTimer = setTimeout(() => proc.kill(9), 5_000); // SIGKILL escalation
       }, opts.timeoutMs)
     : undefined;
   const [stdout, stderr] = await Promise.all([
@@ -46,6 +47,7 @@ export async function runCmd(
   ]);
   const code = await proc.exited;
   if (timer) clearTimeout(timer);
+  if (killTimer) clearTimeout(killTimer);
   if (killed) {
     return { code: -2, stdout, stderr: stderr || `timeout after ${opts.timeoutMs}ms: ${cmd[0]}` };
   }
