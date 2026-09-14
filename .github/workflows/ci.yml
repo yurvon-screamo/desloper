@@ -30,7 +30,8 @@ jobs:
       - run: bun src/cli.ts --setup
       - name: Golden fixtures audit
         run: |
-          bun src/cli.ts tests/fixtures --json > report.json
+          bun src/cli.ts tests/fixtures --json > report.json || true
+          jq '.summary' report.json
           jq -e '.summary.tool_failures == 0' report.json
           jq -e '.summary.p0 == 1' report.json
           jq -e '[.tool_runs[] | select(.tool=="im-not-ai") | .findings] | add >= 1' report.json
