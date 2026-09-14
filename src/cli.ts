@@ -11,7 +11,7 @@ import type { Finding, Lang, Report, ToolRun } from "./scanners/types.ts";
 import type { Scanner } from "./scanners/base.ts";
 import { PhraseScanner } from "./scanners/phrase.ts";
 import { AvoidAiWritingScanner } from "./scanners/avoid-ai-writing.ts";
-import { ZeroSlopScanner } from "./scanners/zero-slop.ts";
+import { PatternScanner } from "./scanners/pattern-en.ts";
 import { MetricsScanner } from "./scanners/metrics-scanner.ts";
 import { HumanizerRuScanner } from "./scanners/humanizer-ru.ts";
 import { ImNotAiScanner } from "./scanners/im-not-ai.ts";
@@ -81,7 +81,7 @@ async function main() {
   const scanners: Scanner[] = [
     new PhraseScanner(),
     new AvoidAiWritingScanner(),
-    new ZeroSlopScanner(),
+    new PatternScanner(),
     new MetricsScanner(),
     new HumanizerRuScanner(),
     new ImNotAiScanner(),

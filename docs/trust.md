@@ -19,12 +19,9 @@
   - **im-not-ai LLM routes** (light/standard/heavy rewriting pipelines) —
     only the deterministic metrics shim;
   - **zero-slop hosted MCP editing** — only the local `score` command.
-- Your content does not leave the machine. One network caveat:
-  **zero-slop is fetched via `npx --yes zero-slop@2.12.1` at scan time**
-  (version-pinned, but the package itself downloads from the npm registry
-  on first use and during availability checks). If that matters for your
-  threat model, pre-install it or vendor the package. All other scanners
-  are fully local.
+- Your content does not leave the machine. All scanners are fully local —
+  zero-slop's npx fetch was removed when its patterns were absorbed as
+  data (config/dictionaries/zero-slop-patterns.json).
 
 ## Vendor provenance
 

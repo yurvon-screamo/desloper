@@ -28,7 +28,7 @@ const P1_CATEGORIES = new Set([
   "dev-blog-boilerplate", "ai-placeholder", "zero-slop-hit", "humanizer-score",
   "ko:risk_band", "p0-placeholder",
 ]);
-const P1_CATEGORY_PREFIXES = ["ru:", "VI-HUM"];
+const P1_CATEGORY_PREFIXES = ["ru:", "VI-HUM", "zs:"];
 const P2_CATEGORIES = new Set(["linkedin", "triads", "rhythm", "scaffolding"]);
 
 /** Upstream corpus calibration: aaw allows up to 6 findings per file. */

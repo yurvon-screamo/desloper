@@ -31,14 +31,17 @@ bun src/cli.ts content/ --lang ru              # override auto-detect if unsure
 
 | Language | Built-in (zero setup) | Vendor scanners (after --setup) |
 |---|---|---|
-| EN | phrases · metrics (humanizer-skill lib, vendored) | avoid-ai-writing (npm, pinned) · zero-slop (npx, pinned) |
+| EN | phrases · patterns-en (ZeroSlop patterns, absorbed) · metrics (humanizer-skill lib, vendored) | avoid-ai-writing (npm, pinned) |
 | RU | phrases | humanizer-ru scan.py (genre-calibrated: docs→academic) |
 | KO | phrases (series-distilled KO list) | im-not-ai deterministic shim (KatFish metrics; LLM routes never invoked) |
 | VI | phrases + viet-lint (pattern catalog as data) | — |
 
 Dead/dormant upstreams were absorbed as data with attribution
 (config/dictionaries/, vendored lib) instead of staying runtime
-dependencies — see tools.yaml "REMOVED VENDORS".
+dependencies — see tools.yaml "REMOVED VENDORS". ZeroSlop's 139
+production-relevant patterns (contrast formulas, scaffolding, hedging)
+are absorbed into `patterns-en`; zero network dependencies remain at
+scan time.
 
 ## Per-project false positives
 

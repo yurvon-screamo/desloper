@@ -1,0 +1,937 @@
+{
+ "_source": "Extracted from manavmishra/ZeroSlop@2.12.1 data/patterns.json (MIT)",
+ "_note": "Filtered to categories that fired in the Origa production deslop series; see tools.yaml REMOVED VENDORS",
+ "patterns": [
+  {
+   "name": "hedge-stem",
+   "cat": "hedging",
+   "rx": "\\bit(?:(?:'|’)s| is| has) (?:worth noting|worth mentioning|important to (?:note|remember|understand)|crucial to)\\b|\\bit should be noted\\b|\\bit bears mentioning\\b",
+   "w": 4
+  },
+  {
+   "name": "hedge-stack",
+   "cat": "hedging",
+   "rx": "\\b(?:might|may|could)\\s+(?:possibly|potentially|perhaps)\\b",
+   "w": 3
+  },
+  {
+   "name": "arguably",
+   "cat": "hedging",
+   "rx": "\\barguably\\b",
+   "w": 2
+  },
+  {
+   "name": "that-said",
+   "cat": "hedging",
+   "rx": "(?:^|\\. )That said,",
+   "w": 1.5
+  },
+  {
+   "name": "listicle-stem",
+   "cat": "scaffolding",
+   "rx": "\\b(?:there are (?:several|a few|many|numerous) (?:key |important )?(?:factors|things|ways|reasons|considerations|lessons|takeaways)|here are (?:a few|some|three|five|\\d+))\\b",
+   "w": 4
+  },
+  {
+   "name": "signpost-transition",
+   "cat": "scaffolding",
+   "rx": "(?:^|\\. )(?:Moreover|Furthermore|Additionally|In addition),",
+   "w": 2.5
+  },
+  {
+   "name": "conclusion-scaffold",
+   "cat": "scaffolding",
+   "rx": "\\b(?:in conclusion|in summary|to sum up|ultimately, |overall, |the key takeaway|at the end of the day|all in all|when all is said and done)\\b",
+   "w": 4
+  },
+  {
+   "name": "meta-commentary",
+   "cat": "scaffolding",
+   "rx": "\\b(?:let me (?:walk you through|break (?:this|it) down|explain|paint (?:you )?a picture)|in this (?:article|post|piece), (?:we|i)(?:'ll| will)|let(?:(?:'|’)s| us) (?:dive|unpack|explore|take a closer look|break (?:it|this) down))\\b",
+   "w": 4
+  },
+  {
+   "name": "whether-youre",
+   "cat": "scaffolding",
+   "rx": "\\bwhether you(?:(?:'|’)re| are) (?:a|an|at|just|new)\\b",
+   "w": 3
+  },
+  {
+   "name": "lesson-n-stem",
+   "cat": "scaffolding",
+   "rx": "(?:^|\\n)[ \\t]*(?:lesson|takeaway|tip|step|mistake) #?\\d+[:.]",
+   "w": 3
+  },
+  {
+   "name": "walk-away-with",
+   "cat": "marketing",
+   "rx": "\\b(?:walk away with|actionable (?:insights|takeaways|tips)|practical (?:tips|techniques|takeaways|strategies) you can (?:apply|use))\\b",
+   "w": 4
+  },
+  {
+   "name": "so-you-dont-have-to",
+   "cat": "marketing",
+   "rx": "\\bso you do(?:n(?:'|’)t| not) have to\\b|\\bfind out the hard way\\b|\\bskip (?:that|the) (?:part|pain|struggle)\\b",
+   "w": 4
+  },
+  {
+   "name": "spirit-of-transparency",
+   "cat": "puffery",
+   "rx": "\\bin the spirit of (?:transparency|openness)\\b|\\ba significant portion of\\b|\\bthe short version is\\b|\\bfull transparency[,:]",
+   "w": 3.5
+  },
+  {
+   "name": "emotional-labor",
+   "cat": "linkedin",
+   "rx": "\\b(?:hardest (?:decision|thing) (?:of|i)|poured (?:everything|our hearts?)|i owe it to|writing this (?:post|is)n?(?:'|’)?t? ?(?:is )?(?:painful|hard)|with a heavy heart)\\b",
+   "w": 4.5
+  },
+  {
+   "name": "aphorism-formula",
+   "cat": "drama",
+   "rx": "\\b\\w+ is(?:n(?:'|’)t| not) the opposite of \\w+\\b|\\bis(?:n(?:'|’)t| not) (?:a|the) (?:destination|sprint)[,.;] (?:it|but)\\b|\\bit(?:(?:'|’)s| is| has) a marathon\\b",
+   "w": 5
+  },
+  {
+   "name": "not-x-but-y",
+   "cat": "contrast",
+   "rx": "\\b(?:is|are|was|were)(?:n(?:'|’)t| not) just (?:about )?\\w[\\w '’-]{0,40}[.,;:\\u2014\\u2013-]+\\s*(?:it|they|he|she|we)(?:(?:'|’)s|(?:'|’)re| is| are| was| were)\\b|\\bnot (?:just|only|merely) [\\w '’-]{2,40}[,;:\\u2014\\u2013-]+\\s*but\\b",
+   "w": 4
+  },
+  {
+   "name": "its-not-its",
+   "cat": "contrast",
+   "rx": "\\b(?:it|this|that)(?:(?:'|’)s| is| was)(?: really| actually)? not (?:just )?(?:about )?[\\w '’-]{2,40}[.,;:\\u2014\\u2013-]+\\s*(?:it|this|that)(?:(?:'|’)s| is| was)\\b",
+   "w": 4.5
+  },
+  {
+   "name": "question-isnt",
+   "cat": "contrast",
+   "rx": "\\bthe (?:real |hard |big |key )?(?:question|answer|problem|issue|point|goal|key|secret|difference|challenge|trick|magic|lesson|story|irony|hard part|best part) (?:is|was)(?:n(?:'|’)t| not)\\b",
+   "w": 3.5
+  },
+  {
+   "name": "negative-listing",
+   "cat": "contrast",
+   "rx": "\\bnot (?:a|an|the) [\\w '’-]{2,30}\\. not (?:a|an|the) \\b",
+   "w": 4
+  },
+  {
+   "name": "staged-negative-ladder",
+   "cat": "contrast",
+   "rx": "(?:^|[.!?]\\s+|\\n)[–—*+•-]*\\s*not in (?:an? |the )?[\\w '’-]{2,32}\\.\\s*(?:[–—*+•-]+\\s*)?not in (?:an? |the )?[\\w '’-]{2,32}\\.\\s*(?:[–—*+•-]+\\s*)?but in (?:an? |the )?[\\w '’-]{2,48}",
+   "w": 5
+  },
+  {
+   "name": "this-isnt-about",
+   "cat": "contrast",
+   "rx": "\\bthis (?:is|was)(?:n(?:'|’)t| not) (?:just )?about\\b",
+   "w": 3.5
+  },
+  {
+   "name": "puffery-testament",
+   "cat": "puffery",
+   "rx": "\\b(?:stands? as a testament|serves? as a (?:testament|reminder)|is a testament to|marks? a pivotal|pivotal moment|plays? a (?:vital|crucial|key|significant|critical|central) role|solidif(?:y|ies) (?:its|their)|underscor(?:es|ing) (?:its|the)|cements? (?:its|their) (?:position|place|status))\\b",
+   "w": 5
+  },
+  {
+   "name": "rich-tapestry",
+   "cat": "puffery",
+   "rx": "\\b(?:rich (?:tapestry|history|heritage)|vibrant (?:community|ecosystem|culture)|nestled (?:in|among|between)|breathtaking|must-(?:visit|see))\\b|\\b(?:stunning )?natural beauty\\b",
+   "w": 4
+  },
+  {
+   "name": "superficial-ing",
+   "cat": "puffery",
+   "rx": ", (?:highlighting|underscoring|showcasing|reflecting|demonstrating|signaling|cementing|reinforcing|ensuring|solidifying|marking|positioning) (?:the|its|their|a|how)\\b",
+   "w": 4
+  },
+  {
+   "name": "weasel-attribution",
+   "cat": "puffery",
+   "rx": "\\b(?:experts (?:agree|say|believe)|industry (?:reports|leaders) (?:suggest|agree)|studies (?:show|suggest)|many argue|widely (?:regarded|considered|seen) as|some critics argue|observers have (?:cited|noted)|research shows)\\b",
+   "w": 4
+  },
+  {
+   "name": "marketing-register",
+   "cat": "marketing",
+   "rx": "\\b(?:game.?chang(?:er|ing)|paradigm shift|cutting.?edge|state-of-the-art|best-in-class|world-class|next-level|seamless(?:ly)?|frictionless|turnkey|synergy|supercharge|revolutioniz\\w+|transformative|disruptive innovation)\\b",
+   "w": 4
+  },
+  {
+   "name": "this-changes",
+   "cat": "marketing",
+   "rx": "\\bthis (?:changes everything|is huge|is a big deal)\\b",
+   "w": 5
+  },
+  {
+   "name": "unlock-potential",
+   "cat": "marketing",
+   "rx": "\\b(?:unlock(?:ing)? (?:the |your |new )?(?:full |true )?(?:potential|power|value|opportunities)|take .{0,25}to the next level|empower(?:s|ing)? (?:teams?|users?|people|you)\\b)",
+   "w": 4.5
+  },
+  {
+   "name": "future-is",
+   "cat": "marketing",
+   "rx": "\\bthe future (?:of \\w+ )?is (?:here|now|bright)\\b|\\bwe(?:(?:'|’)re| are) just getting started\\b|\\bfuture you will thank you\\b|\\bstay tuned\\b",
+   "w": 4.5
+  },
+  {
+   "name": "announce-excited",
+   "cat": "linkedin",
+   "rx": "\\b(?:(?:i(?:'|’)m|i am) |we(?:(?:'|’)re| are) )?(?:beyond |incredibly |truly |so )?(?:excited|thrilled|humbled|honored|proud|delighted) (?:to|and)\\b",
+   "w": 5
+  },
+  {
+   "name": "engagement-bait",
+   "cat": "linkedin",
+   "rx": "\\b(?:agree\\?|thoughts\\?|what(?:(?:'|’)s| is) your (?:take|experience)|drop a comment|let me know in the comments|share this with|share if you|tag someone|repost if|follow (?:me|for more)|sound off in|save this post|bookmark this|link in (?:bio|the )?(?:first )?comments?|dm me\\b|comment [\"“']?\\w{1,15}[\"”']? (?:below )?and i(?:'|’)ll|my dms are (?:always )?open|what about you\\?)\\b",
+   "w": 4.5
+  },
+  {
+   "name": "emoji-arrow-bullet",
+   "cat": "linkedin",
+   "rx": "(?:^|\\n)[ \\t]*(?:👉|✅|🔹|➡️|✨|🚀|💡|🔥|→)\\s",
+   "w": 2.5
+  },
+  {
+   "name": "hashtag-cluster",
+   "cat": "linkedin",
+   "rx": "(?:#\\w+\\s*){3,}",
+   "w": 4
+  },
+  {
+   "name": "journey-gratitude",
+   "cat": "linkedin",
+   "rx": "\\b(?:this journey|the journey (?:so far|ahead)|grateful (?:for|to)|could(?:n(?:'|’)t| not) have done it without|huge (?:thanks|shout.?out)|humbled and)\\b",
+   "w": 3
+  },
+  {
+   "name": "lessons-learned-stem",
+   "cat": "linkedin",
+   "rx": "\\b(?:here(?:(?:'|’)s| is| has) what (?:it|that) taught me|\\d+ (?:key )?(?:lessons|takeaways|things) (?:i(?:'|’ve)? learned|from))\\b",
+   "w": 3.5
+  },
+  {
+   "name": "colon-reveal",
+   "cat": "drama",
+   "rx": "(?:^|\\. )The (?:best|craziest|wildest|most \\w+) part\\??[:.]",
+   "w": 4
+  },
+  {
+   "name": "emphasis-crutch",
+   "cat": "drama",
+   "rx": "\\b(?:make no mistake|make it count|and (?:honestly|frankly)\\?|the result\\?|the outcome\\?|spoiler(?: alert)?:)|(?:^|\\. |\\n)Honestly\\? ",
+   "w": 4
+  },
+  {
+   "name": "transformation-chain",
+   "cat": "drama",
+   "rx": "\\b(\\w+) becomes (\\w+)\\. \\2 becomes\\b",
+   "w": 5
+  },
+  {
+   "name": "corrective-reveal",
+   "cat": "drama",
+   "rx": "\\byou(?:'|’)ve been told\\b|\\bhere(?:(?:'|’)s| is| has) the truth:",
+   "w": 5
+  },
+  {
+   "name": "copula-boast",
+   "cat": "verbs",
+   "rx": "\\b(?:boasts?|boasting) (?:a|an|the|over|more)\\b",
+   "w": 4
+  },
+  {
+   "name": "serves-as-hub",
+   "cat": "verbs",
+   "rx": "\\bserves? as a (?:centralized |central )?(?:hub|platform|solution|gateway)\\b",
+   "w": 4
+  },
+  {
+   "name": "weak-verb-phrase",
+   "cat": "verbs",
+   "rx": "\\b(?:has the ability to|is able to|in order to|made the decision to|conduct(?:ed)? an analysis|has the potential to)\\b",
+   "w": 2.5
+  },
+  {
+   "name": "filler-intensifier",
+   "cat": "filler",
+   "rx": "\\b(?:truly|genuinely|incredibly|remarkably|undoubtedly|undeniably|absolutely essential|significantly enhanc\\w+)\\b",
+   "w": 2
+  },
+  {
+   "name": "vague-quantifier",
+   "cat": "filler",
+   "rx": "\\b(?:a (?:wide|vast|diverse) (?:variety|range|array) of|countless|myriad|a plethora of|numerous)\\b",
+   "w": 3
+  },
+  {
+   "name": "deep-dive",
+   "cat": "filler",
+   "rx": "\\b(?:deep dive|dive (?:deep(?:er)? )?into|double.?click on)\\b",
+   "w": 3
+  },
+  {
+   "name": "isnt-about-its-about",
+   "cat": "contrast",
+   "rx": "\\b(?:is|are|was|were)(?:n(?:'|’)t| not) (?:just |really |only )?about [\\w '’-]{2,40}[.,;:\\u2014\\u2013-]+\\s*(?:it|this|that|they)(?:(?:(?:'|’))s|(?:(?:'|’))re| is| are| was| were)(?: about)?\\b",
+   "w": 5
+  },
+  {
+   "name": "never-about",
+   "cat": "contrast",
+   "rx": "\\b(?:was|is|are|has(?: been)?|have(?: been)?) never (?:been )?about\\b|\\bit(?:'|’)s never been about\\b",
+   "w": 3.5
+  },
+  {
+   "name": "didnt-just",
+   "cat": "contrast",
+   "rx": "\\b(?:did|does|do)(?:n(?:'|’)t| not) just [\\w '’-]{2,40}[.,;:\\u2014\\u2013-]+\\s*(?:we|they|it|he|she|i|you) \\w+",
+   "w": 3.5
+  },
+  {
+   "name": "less-about-more-about",
+   "cat": "contrast",
+   "rx": "\\bless about [\\w '’-]{2,40}(?:[.,;:\\u2014\\u2013-]+|\\s+and)\\s*more about\\b",
+   "w": 5
+  },
+  {
+   "name": "less-like-more-like",
+   "cat": "contrast",
+   "rx": "\\b(?:feel(?:s|ing)?|seem(?:s|ing)?) less like (?:an? |the )?[\\w '’-]{2,48}(?:,| and)? (?:an? )?(?:little )?more like (?:an? |the )?[\\w '’-]{2,48}",
+   "w": 4
+  },
+  {
+   "name": "thats-not-thats",
+   "cat": "contrast",
+   "rx": "\\bthat(?:(?:(?:'|’))s| is) not [\\w '’-]{2,30}[.,;:\\u2014\\u2013-]+\\s*that(?:(?:(?:'|’))s| is)\\b",
+   "w": 3.5
+  },
+  {
+   "name": "isocolon-ditransitive",
+   "cat": "contrast",
+   "rx": "\\b(let|give|hand|show|tell|offer|teach|buy|cost|earn|save|bring|send|win)s? you\\b[^.!?]{0,70}[.!?]\\s+[^.!?]{0,70}\\b\\1s? you\\b",
+   "w": 4.5
+  },
+  {
+   "name": "this-is-what-looks-like",
+   "cat": "contrast",
+   "rx": "(?:^|[.!?]\\s+|\\n)(?:this|that) is what [\\w '’-]{2,40} looks like\\b",
+   "w": 4
+  },
+  {
+   "name": "no-x-had-to",
+   "cat": "contrast",
+   "rx": "(?:^|[.!?]\\s+|\\n)No [\\w '’-]{2,40} (?:had to|needed to|has to|ever) [\\w '’-]{2,60}\\.\\s+[\\w '’-]{2,40} (?:did|made|chose|decided|built|released|shipped|published)\\b",
+   "w": 4
+  },
+  {
+   "name": "not-the-but-the",
+   "cat": "contrast",
+   "rx": "\\bnot the [\\w '’-]{2,30}[,;] but the\\b",
+   "w": 3
+  },
+  {
+   "name": "not-because-but-because",
+   "cat": "contrast",
+   "rx": "\\bnot because [\\w '’-]{2,40}[,;] but because\\b",
+   "w": 3
+  },
+  {
+   "name": "more-than-just",
+   "cat": "contrast",
+   "rx": "\\b(?:is|are|was|were|it(?:'|’)s|they(?:'|’)re) (?:so much )?more than just\\b",
+   "w": 3
+  },
+  {
+   "name": "ai-wont-replace",
+   "cat": "contrast",
+   "rx": "\\bwon(?:'|’)t (?:replace|take) your jobs?\\b|\\bwon(?:'|’)t replace \\w+[.,;] (?:but )?(?:a |an |the |someone |people |those )?[\\w ]{0,30}(?:using|who use)\\b",
+   "w": 4.5
+  },
+  {
+   "name": "stop-start",
+   "cat": "contrast",
+   "rx": "(?:^|[.!?]\\s+|\\n)Stop [\\w '’,-]{2,40}\\. Start [a-z]",
+   "w": 4.5
+  },
+  {
+   "name": "x-is-dead-long-live",
+   "cat": "contrast",
+   "rx": "\\bis dead[.,;] long live\\b",
+   "w": 4.5
+  },
+  {
+   "name": "do-this-instead",
+   "cat": "contrast",
+   "rx": "\\b(?:do|try|read|use) this instead\\b|\\bwhat to do instead\\b",
+   "w": 3.5
+  },
+  {
+   "name": "raise-your-hand",
+   "cat": "linkedin",
+   "rx": "\\braise your hand if\\b",
+   "w": 4.5
+  },
+  {
+   "name": "thats-when-it-hit",
+   "cat": "drama",
+   "rx": "\\b(?:that(?:'|’)s when|then) it hit me\\b|\\bit hit me[:.,]",
+   "w": 4.5
+  },
+  {
+   "name": "little-did-i-know",
+   "cat": "drama",
+   "rx": "\\blittle did (?:i|we|they|he|she) know\\b",
+   "w": 4.5
+  },
+  {
+   "name": "changed-everything",
+   "cat": "drama",
+   "rx": "\\b(?:changed|changes) everything\\b",
+   "w": 3.5
+  },
+  {
+   "name": "rest-is-history",
+   "cat": "drama",
+   "rx": "\\bthe rest(?:, as they say,)? is history\\b",
+   "w": 4
+  },
+  {
+   "name": "fast-forward",
+   "cat": "drama",
+   "rx": "\\bfast.?forward (?:to|a few|six|two|three|four|five|ten|\\d+)\\b",
+   "w": 3
+  },
+  {
+   "name": "one-thing-is-certain",
+   "cat": "drama",
+   "rx": "\\bone thing(?:(?:(?:'|’))s| is) (?:certain|clear|for sure)\\b|\\bif there(?:(?:(?:'|’))s| is) one thing\\b",
+   "w": 4
+  },
+  {
+   "name": "cannot-be-overstated",
+   "cat": "drama",
+   "rx": "\\bcan(?:not|(?:'|’)t) be overstated\\b|\\bcan(?:not|(?:'|’)t) stress (?:this|it) enough\\b",
+   "w": 4.5
+  },
+  {
+   "name": "wait-for-it",
+   "cat": "drama",
+   "rx": "\\bwait for it\\b",
+   "w": 4
+  },
+  {
+   "name": "further-from-truth",
+   "cat": "drama",
+   "rx": "\\bcould(?:n(?:'|’)t)? (?:not )?be further from the truth\\b",
+   "w": 4.5
+  },
+  {
+   "name": "understatement-formula",
+   "cat": "drama",
+   "rx": "\\bwould be (?:an|the) understatement\\b|\\bis (?:an|the) understatement of\\b",
+   "w": 4
+  },
+  {
+   "name": "full-stop-period",
+   "cat": "drama",
+   "rx": "(?:^|\\. |\\n)(?:Full stop|Period|End of story|Enough said)\\.",
+   "w": 3.5
+  },
+  {
+   "name": "results-speak",
+   "cat": "drama",
+   "rx": "\\bspeaks? for (?:itself|themselves)\\b|\\bnumbers (?:do(?:n(?:'|’)t| not)|never) lie\\b",
+   "w": 3.5
+  },
+  {
+   "name": "only-time-will-tell",
+   "cat": "drama",
+   "rx": "\\bonly time will tell\\b|\\btime will tell\\b|\\bremains to be seen\\b|\\bthe jury is (?:still )?out\\b",
+   "w": 3.5
+  },
+  {
+   "name": "possibilities-endless",
+   "cat": "marketing",
+   "rx": "\\bthe possibilities are (?:endless|limitless)\\b|\\bendless possibilities\\b|\\bimplications are (?:far-reaching|profound|enormous)\\b",
+   "w": 5
+  },
+  {
+   "name": "exciting-times",
+   "cat": "marketing",
+   "rx": "\\bexciting times (?:ahead|for)\\b|\\bwatch this space\\b",
+   "w": 4.5
+  },
+  {
+   "name": "level-up-your",
+   "cat": "marketing",
+   "rx": "\\blevel(?:ing)? up your\\b",
+   "w": 3.5
+  },
+  {
+   "name": "represents-significant",
+   "cat": "puffery",
+   "rx": "\\b(?:represents?|marks?) a (?:significant|major|fundamental|profound) (?:shift|milestone|step|change|leap)\\b",
+   "w": 4
+  },
+  {
+   "name": "lasting-legacy",
+   "cat": "puffery",
+   "rx": "\\b(?:lasting|enduring) (?:legacy|impact|impression)\\b|\\bleaves? a lasting\\b|\\bindelible mark\\b",
+   "w": 4
+  },
+  {
+   "name": "deeply-rooted",
+   "cat": "puffery",
+   "rx": "\\bdeeply rooted\\b|\\brich cultural heritage\\b|\\bcontinues? to (?:inspire|thrive|resonate)\\b",
+   "w": 3.5
+  },
+  {
+   "name": "in-the-heart-of",
+   "cat": "puffery",
+   "rx": "\\bin the heart of\\b",
+   "w": 2.5
+  },
+  {
+   "name": "treasure-trove",
+   "cat": "puffery",
+   "rx": "\\btreasure trove\\b|\\ba wealth of (?:knowledge|information|experience|insights)\\b",
+   "w": 3.5
+  },
+  {
+   "name": "other-plans",
+   "cat": "drama",
+   "rx": "\\b(?:life|fate|the universe) had other plans\\b",
+   "w": 4.5
+  },
+  {
+   "name": "shaping-the-future",
+   "cat": "marketing",
+   "rx": "\\bshap(?:e|es|ing) the future of\\b",
+   "w": 4
+  },
+  {
+   "name": "whats-possible",
+   "cat": "marketing",
+   "rx": "\\b(?:redefin|reimagin)\\w+ what(?:'|’)s possible\\b|\\bpush(?:es|ing)? the (?:boundaries|limits|envelope)\\b",
+   "w": 4
+  },
+  {
+   "name": "harness-the-power",
+   "cat": "marketing",
+   "rx": "\\bharness(?:ing|es)? the (?:power|potential) of\\b|\\bunlock(?:ing|s)? the power\\b",
+   "w": 4
+  },
+  {
+   "name": "look-no-further",
+   "cat": "marketing",
+   "rx": "\\blook no further\\b|\\byou(?:'|’)ve come to the right place\\b",
+   "w": 5
+  },
+  {
+   "name": "second-to-none",
+   "cat": "marketing",
+   "rx": "\\bsecond to none\\b|\\bbest.kept secret\\b",
+   "w": 4
+  },
+  {
+   "name": "peace-of-mind",
+   "cat": "marketing",
+   "rx": "\\bpeace of mind\\b",
+   "w": 3
+  },
+  {
+   "name": "perfect-blend",
+   "cat": "puffery",
+   "rx": "\\b(?:perfect|unique|potent|heady) (?:blend|mix|combination) of\\b",
+   "w": 4
+  },
+  {
+   "name": "something-for-everyone",
+   "cat": "puffery",
+   "rx": "\\bsomething for everyone\\b",
+   "w": 4
+  },
+  {
+   "name": "sets-apart",
+   "cat": "puffery",
+   "rx": "\\bsets? (?:it|them|us|you|\\w+) apart\\b",
+   "w": 3
+  },
+  {
+   "name": "nothing-short-of",
+   "cat": "puffery",
+   "rx": "\\bnothing short of\\b",
+   "w": 3.5
+  },
+  {
+   "name": "masterclass-in",
+   "cat": "puffery",
+   "rx": "\\ba masterclass in\\b|\\ba love letter to\\b|\\ba stroke of genius\\b",
+   "w": 3.5
+  },
+  {
+   "name": "in-equal-measure",
+   "cat": "puffery",
+   "rx": "\\bin equal measure\\b",
+   "w": 3
+  },
+  {
+   "name": "is-a-breeze",
+   "cat": "marketing",
+   "rx": "\\bis a breeze\\b",
+   "w": 3
+  },
+  {
+   "name": "is-poised-to",
+   "cat": "puffery",
+   "rx": "\\b(?:is|are|stands?) poised to\\b",
+   "w": 3
+  },
+  {
+   "name": "alike-formula",
+   "cat": "puffery",
+   "rx": "\\b(?:beginners?|experts?|professionals?|novices?|veterans?|fans?|critics?|users?|developers?|consumers?|businesses|enthusiasts?) and [\\w-]+ alike\\b",
+   "w": 3
+  },
+  {
+   "name": "in-a-nutshell",
+   "cat": "scaffolding",
+   "rx": "\\bin a nutshell\\b|\\bto put it simply\\b|\\bsimply put\\b|\\blong story short\\b|\\bsuffice it to say\\b",
+   "w": 3
+  },
+  {
+   "name": "needless-to-say",
+   "cat": "scaffolding",
+   "rx": "\\bneedless to say\\b|\\bit goes without saying\\b|\\bit bears repeating\\b",
+   "w": 3.5
+  },
+  {
+   "name": "at-its-core",
+   "cat": "scaffolding",
+   "rx": "\\bin essence\\b|\\bat (?:its|their) core\\b|\\bat the (?:very )?heart of\\b|\\bthe heart of the matter\\b",
+   "w": 2.5
+  },
+  {
+   "name": "when-it-comes-to",
+   "cat": "scaffolding",
+   "rx": "\\bwhen it comes to\\b",
+   "w": 2
+  },
+  {
+   "name": "heres-a-breakdown",
+   "cat": "scaffolding",
+   "rx": "\\bhere(?:(?:(?:'|’))s| is) a (?:quick |full |complete )?(?:breakdown|rundown)\\b|\\beverything you need to know\\b",
+   "w": 3
+  },
+  {
+   "name": "might-be-wondering",
+   "cat": "scaffolding",
+   "rx": "\\byou (?:might|may) be (?:wondering|asking|thinking)\\b",
+   "w": 4
+  },
+  {
+   "name": "think-of-it-as",
+   "cat": "scaffolding",
+   "rx": "\\bthink of (?:it|this) as\\b",
+   "w": 2.5
+  },
+  {
+   "name": "believe-it-or-not",
+   "cat": "scaffolding",
+   "rx": "\\bbelieve it or not\\b",
+   "w": 3
+  },
+  {
+   "name": "if-this-resonates",
+   "cat": "linkedin",
+   "rx": "\\bif this resonate[sd]\\b",
+   "w": 4
+  },
+  {
+   "name": "say-it-louder",
+   "cat": "linkedin",
+   "rx": "\\bsay it louder\\b|\\bfor the people in the back\\b",
+   "w": 5
+  },
+  {
+   "name": "normalize-x",
+   "cat": "linkedin",
+   "rx": "(?:^|\\. |\\n)Normalize \\w+ing\\b",
+   "w": 3.5
+  },
+  {
+   "name": "this-is-your-sign",
+   "cat": "linkedin",
+   "rx": "\\bthis is your (?:sign|reminder|permission)\\b",
+   "w": 4.5
+  },
+  {
+   "name": "today-years-old",
+   "cat": "linkedin",
+   "rx": "\\btoday years old\\b",
+   "w": 4.5
+  },
+  {
+   "name": "psa-protip",
+   "cat": "scaffolding",
+   "rx": "(?:^|\\n)PSA:|\\bpro.tip:|\\bfun fact:|\\bfriendly reminder\\b|\\bgentle reminder\\b",
+   "w": 3
+  },
+  {
+   "name": "ill-go-first",
+   "cat": "linkedin",
+   "rx": "\\bi(?:'|’)ll go first\\b",
+   "w": 4
+  },
+  {
+   "name": "as-we-move-forward",
+   "cat": "scaffolding",
+   "rx": "\\bas we (?:move|look) (?:forward|ahead)\\b|\\bthe road ahead\\b",
+   "w": 3.5
+  },
+  {
+   "name": "cue-the",
+   "cat": "drama",
+   "rx": "(?:^|\\. |\\n)Cue (?:the|a) \\w+|\\bdrum.?roll\\b",
+   "w": 3.5
+  },
+  {
+   "name": "personal-news",
+   "cat": "linkedin",
+   "rx": "\\b(?:some )?personal news[:.]|\\b(?:big|exciting) news[:.]|\\b(?:a new|the next) chapter\\b|\\bbittersweet\\b|\\bwith mixed emotions\\b",
+   "w": 3.5
+  },
+  {
+   "name": "couldnt-be-prouder",
+   "cat": "linkedin",
+   "rx": "\\bcould(?:n(?:'|’)t| not) be (?:more proud|prouder|more excited|happier|more thrilled)\\b",
+   "w": 4
+  },
+  {
+   "name": "as-i-reflect",
+   "cat": "linkedin",
+   "rx": "\\bas i (?:sit here and )?reflect\\b|\\breflecting on (?:the past|my|this past)\\b",
+   "w": 3.5
+  },
+  {
+   "name": "on-a-mission-to",
+   "cat": "marketing",
+   "rx": "\\bon a mission to\\b",
+   "w": 3
+  },
+  {
+   "name": "passionate-about",
+   "cat": "linkedin",
+   "rx": "\\bpassionate about\\b",
+   "w": 2.5
+  },
+  {
+   "name": "intersection-of",
+   "cat": "linkedin",
+   "rx": "\\bat the intersection of\\b",
+   "w": 3.5
+  },
+  {
+   "name": "comprehensive-guide",
+   "cat": "marketing",
+   "rx": "\\b(?:comprehensive|ultimate|complete|definitive) guide\\b",
+   "w": 3.5
+  },
+  {
+   "name": "heres-how-why",
+   "cat": "scaffolding",
+   "rx": "\\bhere(?:(?:'|’)s| is) how (?:i|we|you|to|it)\\b|\\bhere(?:(?:'|’)s| is) why[:.]",
+   "w": 2.5
+  },
+  {
+   "name": "challenges-outlook",
+   "cat": "scaffolding",
+   "rx": "\\bchallenges and (?:future )?(?:prospects|outlook|opportunities)\\b|\\bfuture (?:outlook|prospects)\\b|\\bdespite (?:these|its|the) challenges\\b",
+   "w": 4
+  },
+  {
+   "name": "one-could-argue",
+   "cat": "hedging",
+   "rx": "\\bone (?:could|might) argue\\b",
+   "w": 3
+  },
+  {
+   "name": "thats-where-comes-in",
+   "cat": "marketing",
+   "rx": "\\bthat(?:'|’)s where [\\w '’-]{2,30} comes? in\\b",
+   "w": 4
+  },
+  {
+   "name": "what-does-this-mean",
+   "cat": "scaffolding",
+   "rx": "\\bwhat does (?:this|that|it) mean for (?:you|your)\\b|\\bso,? what does (?:this|that) mean\\b",
+   "w": 4
+  },
+  {
+   "name": "why-it-matters",
+   "cat": "scaffolding",
+   "rx": "(?:^|\\n)Why (?:it|this) matters[:.]?(?:\\s|$)|\\bwhy (?:it|this) matters:",
+   "w": 3
+  },
+  {
+   "name": "counting-preamble",
+   "cat": "scaffolding",
+   "rx": "(?:^|\\. |\\n)(?:Two|Three|Four|Five) (?:factors|things|reasons|lessons|principles|constraints|trends) (?:explain|shape|define|drive|stand out)\\b",
+   "w": 3.5
+  },
+  {
+   "name": "whether-its-abc",
+   "cat": "scaffolding",
+   "rx": "\\bwhether it(?:'|’)s [\\w '’-]{2,30}, [\\w '’-]{2,30},? or\\b",
+   "w": 3
+  },
+  {
+   "name": "false-vulnerability",
+   "cat": "linkedin",
+   "rx": "\\bnot saying this to brag\\b|\\bi(?:'|’)ve been quiet about this\\b|\\bi do(?:n(?:'|’)t| not) (?:usually|normally|often) (?:post|share|talk about)\\b",
+   "w": 4
+  },
+  {
+   "name": "told-me-impossible",
+   "cat": "linkedin",
+   "rx": "\\b(?:they|everyone|people) (?:told|said) (?:me|us) it (?:could|would)n(?:'|’)t (?:be done|work)\\b",
+   "w": 4.5
+  },
+  {
+   "name": "first-and-foremost",
+   "cat": "scaffolding",
+   "rx": "\\bfirst and foremost\\b",
+   "w": 3
+  },
+  {
+   "name": "valuable-insights",
+   "cat": "marketing",
+   "rx": "\\bvaluable insights\\b",
+   "w": 3.5
+  },
+  {
+   "name": "key-turning-point",
+   "cat": "puffery",
+   "rx": "\\b(?:key|major|crucial) turning point\\b",
+   "w": 3.5
+  },
+  {
+   "name": "metaphor-of-family",
+   "cat": "puffery",
+   "rx": "\\ba (?:symphony|labyrinth|mosaic|kaleidoscope|constellation) of\\b|\\ba tapestry of\\b",
+   "w": 4
+  },
+  {
+   "name": "quietly-verbing",
+   "cat": "puffery",
+   "rx": "\\bquietly (?:becoming|building|shipping|winning|reshaping|revolutionizing|leading)\\b",
+   "w": 3.5
+  },
+  {
+   "name": "generic-benefit-stack",
+   "cat": "marketing",
+   "rx": "(?is)\\b(?:platform|solution|product|service|tool)\\b(?=.{0,260}\\b(?:helps?|designed|offers?|combines?|gives?)\\b)(?=(?:.{0,260}?\\b(?:value|efficien\\w*|capabilit\\w*|experience|goals?|collaborat\\w*|work together|change how\\b)\\b){2}).{0,260}",
+   "w": 1
+  }
+ ],
+ "lexicon": {
+  "delve": 6,
+  "delving": 6,
+  "tapestry": 6,
+  "beacon": 5,
+  "realm": 4,
+  "testament": 5,
+  "multifaceted": 5,
+  "meticulous": 4,
+  "intricate": 3,
+  "paramount": 4,
+  "pivotal": 3,
+  "crucial": 1.5,
+  "foster": 3,
+  "utilize": 3,
+  "facilitate": 3,
+  "embark": 4,
+  "holistic": 3,
+  "synergy": 5,
+  "spearhead": 3,
+  "commendable": 4,
+  "noteworthy": 3,
+  "invaluable": 3,
+  "unwavering": 4,
+  "unparalleled": 4,
+  "ever-evolving": 5,
+  "groundbreaking": 3,
+  "burgeoning": 4,
+  "myriad": 4,
+  "plethora": 5,
+  "albeit": 2,
+  "whilst": 2,
+  "furthermore": 2,
+  "moreover": 2,
+  "additionally": 1.5,
+  "notably": 1.5,
+  "importantly": 2,
+  "vibrant": 2.5,
+  "bustling": 4,
+  "nestled": 4,
+  "actionable": 2.5,
+  "impactful": 3,
+  "learnings": 3,
+  "utilization": 3,
+  "operationalize": 3,
+  "empower": 3.5,
+  "supercharge": 5,
+  "gamechang": 5,
+  "game-chang": 5,
+  "cutting-edge": 4,
+  "seamless": 4,
+  "frictionless": 5,
+  "transformative": 4,
+  "revolutionize": 4.5,
+  "reimagine": 3.5,
+  "garner": 3.5,
+  "bolster": 3,
+  "whopping": 3.5,
+  "staggering": 2.5,
+  "jaw-dropping": 3.5,
+  "mind-blowing": 3.5,
+  "mind-boggling": 3.5,
+  "picturesque": 3.5,
+  "steadfast": 3,
+  "indelible": 4,
+  "captivat": 3,
+  "unleash": 3.5,
+  "untapped": 3.5,
+  "skyrocket": 4,
+  "turbocharg": 4.5,
+  "future-proof": 4,
+  "cornerstone": 3,
+  "linchpin": 3.5,
+  "trailblaz": 4,
+  "unprecedented": 3,
+  "unmatched": 3.5,
+  "unrivaled": 4,
+  "top-notch": 3.5,
+  "demystif": 3.5,
+  "elucidat": 4,
+  "cultivat": 2.5,
+  "unveil": 2.5,
+  "quintessential": 3.5,
+  "transcend": 2.5,
+  "renowned": 3,
+  "whirlwind": 3,
+  "must-have": 3.5,
+  "hassle-free": 4,
+  "game-changing": 5,
+  "visionary": 2.5,
+  "industry-leading": 3,
+  "interplay": 3.5,
+  "insightful": 2.5,
+  "enduring": 2,
+  "results-driven": 3,
+  "customer-centric": 3
+ }
+}

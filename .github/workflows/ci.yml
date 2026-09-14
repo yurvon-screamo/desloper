@@ -39,7 +39,7 @@ jobs:
           jq -e '.summary.p0 == 2' report.json
           # Every scanner must produce at least one finding on the fixtures
           # (regressions to zero-findings must fail CI).
-          for t in desloper phrases avoid-ai-writing zero-slop metrics humanizer-ru im-not-ai viet-lint; do
+          for t in desloper phrases avoid-ai-writing patterns-en metrics humanizer-ru im-not-ai viet-lint; do
             jq -e --arg t "$t" '[.tool_runs[] | select(.tool==$t) | .findings] | add >= 1' report.json
           done
           jq -e '.language_uncertain | type == "array"' report.json
