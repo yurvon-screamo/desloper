@@ -27,7 +27,7 @@ export class HumanizerRuScanner implements Scanner {
     const scan = join(ROOT, "vendors/humanizer-ru/skills/humanizer-ru/scripts/scan.py");
     const findings: Finding[] = [];
     for (const file of files) {
-      const genre = /\/docs?\//.test(file) ? "academic" : "marketing";
+      const genre = /\/(docs?|documentation|guides)\//i.test(file) ? "academic" : "marketing";
       const { code, stdout, stderr } = await runCmd(
         [py, scan, file, "--genre", genre, "--json"],
         { timeoutMs: 60_000 },

@@ -1,9 +1,11 @@
 #!/usr/bin/env bun
 import { parseArgs } from "node:util";
-import { globSync } from "node:fs";
+import { globSync, existsSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 import { detectLang, isConfident } from "./langdetect.ts";
-import { triage, type SuppressRule } from "./triage.ts";
+import { triage } from "./triage.ts";
+import { loadSuppressRules } from "./suppress.ts";
+import { scanP0 } from "./scanners/p0.ts";
 import { renderMarkdown } from "./report.ts";
 import type { Finding, Lang, Report, ToolRun } from "./scanners/types.ts";
 import type { Scanner } from "./scanners/base.ts";
@@ -17,7 +19,7 @@ import { VietLintScanner } from "./scanners/viet-lint.ts";
 
 const ROOT = join(import.meta.dir, "..");
 
-function usage(): never {
+function usage(code = 3): never {
   console.error(`desloper — multilingual AI-slop auditor
 
 Usage:
@@ -31,7 +33,7 @@ Options:
   --dry-run       with --setup: print planned steps only
   --help          this help
 `);
-  process.exit(3);
+  process.exit(code);
 }
 
 async function main() {
@@ -47,7 +49,7 @@ async function main() {
     strict: true,
     allowPositionals: true,
   });
-  if (values.help) usage();
+  if (values.help) usage(0);
   const langOverride = (values.lang as Lang | undefined) ?? null;
   if (langOverride && !["en", "ru", "ko", "vi"].includes(langOverride)) {
     console.error(`--lang must be one of en|ru|ko|vi, got "${langOverride}"`);
@@ -77,19 +79,33 @@ async function main() {
     new VietLintScanner(),
   ];
 
-  // Group files by language.
+  // Group files by language; vendor-independent P0 scan runs on raw content.
   const byLang = new Map<Lang, { file: string; confident: boolean }[]>();
+  const uncertainFiles: string[] = [];
   for (const file of files) {
     const content = await Bun.file(file).text();
     const lang = langOverride ?? detectLang(file, content);
     const bucket = byLang.get(lang) ?? [];
-    bucket.push({ file, confident: isConfident(file, content) });
+    const confident = isConfident(file, content);
+    bucket.push({ file, confident });
+    if (!langOverride && !confident) uncertainFiles.push(file);
     byLang.set(lang, bucket);
   }
 
   const toolRuns: ToolRun[] = [];
   const allFindings: Finding[] = [];
   for (const [lang, bucket] of byLang) {
+    // Built-in P0 pass: placeholders must surface even when every
+    // vendor scanner reports the file as clean.
+    let p0Count = 0;
+    for (const { file } of bucket) {
+      const content = await Bun.file(file).text();
+      const res = scanP0(file, content, lang);
+      p0Count += res.findings.length;
+      allFindings.push(...res.findings);
+    }
+    toolRuns.push({ tool: "desloper", ok: true, files: bucket.length, findings: p0Count, error: null });
+
     for (const scanner of scanners) {
       if (!scanner.langs.includes(lang)) continue;
       const avail = await scanner.available();
@@ -110,7 +126,7 @@ async function main() {
     }
   }
 
-  const suppress = await loadSuppressRules();
+  const suppress = await loadSuppressRules(join(ROOT, "config/exceptions.yaml"), ".desloper.yaml");
   const triaged = triage(allFindings, suppress);
   const report: Report = {
     schema_version: 1,
@@ -126,8 +142,12 @@ async function main() {
     },
   };
 
-  if (values.json) console.log(JSON.stringify(report, null, 2));
-  else console.log(renderMarkdown(report));
+  if (values.json) {
+    const json = { ...report, language_uncertain: uncertainFiles };
+    console.log(JSON.stringify(json, null, 2));
+  } else {
+    console.log(renderMarkdown(report, uncertainFiles));
+  }
 
   // Exit policy: incomplete audit is never "clean" for CI.
   const exit = report.summary.tool_failures > 0
@@ -138,48 +158,22 @@ async function main() {
 
 function collectFiles(paths: string[]): string[] {
   const out = new Set<string>();
+  // Never audit dependency/vendor content by default — a bare `desloper`
+  // on a JS repo would otherwise drag in hundreds of third-party READMEs.
+  const isExcluded = (p: string) =>
+    /(^|\/)(node_modules|vendors|\.git|\.venv)(\/|$)/.test(p);
   for (const p of paths) {
     const abs = isAbsolute(p) ? p : join(process.cwd(), p);
-    if (globSync(abs).length && Bun.file(abs).name.endsWith(".md")) {
+    if (isExcluded(abs)) continue;
+    if (abs.endsWith(".md") && existsSync(abs)) {
       out.add(abs);
       continue;
     }
     // directory or glob: take .md recursively
     const dirGlob = join(abs, "**/*.md");
-    for (const f of globSync(dirGlob)) out.add(f);
+    for (const f of globSync(dirGlob)) if (!isExcluded(f)) out.add(f);
   }
   return [...out].sort();
-}
-
-async function loadSuppressRules(): Promise<SuppressRule[]> {
-  const rules: SuppressRule[] = [];
-  // Global base (shipped with desloper).
-  for (const p of [join(ROOT, "config/exceptions.yaml"), ".desloper.yaml"]) {
-    const file = Bun.file(p);
-    if (!(await file.exists())) continue;
-    const text = await file.text();
-    // Minimal YAML subset: "- file: x" / "  tool: y" / "  category: z" / "  quoteContains: q" / "  reason: r"
-    let cur: Partial<SuppressRule> | null = null;
-    for (const line of text.split("\n")) {
-      if (/^suppress:|^rules:|^\s*#/.test(line)) continue;
-      const m = line.match(/^\s*-\s+(\w+):\s*(.+)$/) ?? line.match(/^\s+(\w+):\s*(.+)$/);
-      if (m) {
-        const key = m[1] as keyof SuppressRule;
-        if (["file", "tool", "category", "quoteContains"].includes(key)) {
-          if (line.trimStart().startsWith("-")) {
-            if (cur?.reason) rules.push(cur as SuppressRule);
-            cur = {};
-          }
-          (cur as Record<string, string>)[key] = m[2].replace(/^["']|["']$/g, "");
-        } else if (key === "reason") {
-          (cur as Record<string, string>)[key] = m[2].replace(/^["']|["']$/g, "");
-          if (cur.file || cur.tool || cur.category || cur.quoteContains) rules.push(cur as SuppressRule);
-          cur = {};
-        }
-      }
-    }
-  }
-  return rules;
 }
 
 await main();

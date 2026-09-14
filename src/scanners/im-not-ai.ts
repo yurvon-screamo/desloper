@@ -28,11 +28,13 @@ export class ImNotAiScanner implements Scanner {
     const shim = join(ROOT, "vendors/im-not-ai/scripts/prepare_monolith_input.py");
     const findings: Finding[] = [];
     for (const file of files) {
-      const content = await Bun.file(file).text();
+      // Content goes through a run-dir file, never through argv:
+      // large files hit E2BIG and argv leaks content via `ps`.
       const work = mkdtempSync(join(tmpdir(), "desloper-ko-"));
       try {
+        await Bun.write(join(work, "01_input.txt"), await Bun.file(file).text());
         const { code, stdout, stderr } = await runCmd(
-          [py, shim, "--text", content, "--genre", "essay"],
+          [py, shim, "--run-dir", work, "--genre", "essay"],
           { cwd: work, timeoutMs: 60_000 },
         );
         if (code !== 0) {

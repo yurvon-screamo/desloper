@@ -33,14 +33,15 @@ export class ZeroSlopScanner implements Scanner {
         for (const hit of doc.hits ?? []) {
           issues.push(`[${hit.cat}/${hit.name}] ${hit.quote ?? ""}`);
         }
-        if ((doc.ai_likelihood ?? 0) >= 25 || issues.length > 0) {
+        const likelihood = doc.ai_likelihood ?? 0;
+        if (likelihood >= 25 || issues.length > 0) {
           for (const q of issues) {
             findings.push({
               tool: this.name,
               lang,
               file,
               line: null,
-              severity: doc.ai_likelihood >= 25 ? "high-likelihood" : "hit",
+              severity: likelihood >= 25 ? "high-likelihood" : "hit",
               category: "zero-slop-hit",
               quote: q.slice(0, 200),
               priority: null,
@@ -55,7 +56,7 @@ export class ZeroSlopScanner implements Scanner {
               file,
               line: null,
               severity: "structural",
-              category: `ai_likelihood=${doc.ai_likelihood} evidence=${doc.evidence}`,
+              category: `ai_likelihood=${likelihood} evidence=${doc.evidence ?? "?"}`,
               quote: `tell_density=${doc.tell_density_per_100w}/100w emdash=${doc.emdash_per_100w}/100w`,
               priority: null,
               fpSuppressed: false,

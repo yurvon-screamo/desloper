@@ -1,7 +1,7 @@
 import type { Finding, Report } from "./scanners/types.ts";
 
 /** Render the human-readable markdown report to stdout. */
-export function renderMarkdown(report: Report): string {
+export function renderMarkdown(report: Report, uncertainFiles: string[] = []): string {
   const lines: string[] = [];
   const s = report.summary;
   lines.push(`# desloper report`);
@@ -11,6 +11,12 @@ export function renderMarkdown(report: Report): string {
       `P2 (structural): ${s.p2} · FP suppressed: ${s.fp_suppressed} · tool failures: ${s.tool_failures}**`,
   );
   lines.push("");
+  if (uncertainFiles.length) {
+    lines.push(`> ℹ️ Language auto-detect was inconclusive for ${uncertainFiles.length} file(s); ` +
+      `they were scanned with EN tools — use \`--lang\` to override:`);
+    for (const f of uncertainFiles.slice(0, 10)) lines.push(`> - ${f}`);
+    lines.push("");
+  }
   if (s.tool_failures > 0) {
     lines.push(`> ⚠️ Some scanners failed — this audit is INCOMPLETE (exit 2):`);
     for (const r of report.tool_runs.filter((r) => !r.ok)) {
@@ -26,9 +32,10 @@ export function renderMarkdown(report: Report): string {
     lines.push(`## ${prio} — ${group.length}`);
     lines.push("");
     for (const f of group) {
+      const quote = (f.quote ?? "").replace(/[\n\r]+/g, " ⏎ ").replace(/([*_`#>|])/g, "\\$1");
       lines.push(
         `- **${f.file}${f.line != null ? `:${f.line}` : ""}** ` +
-          `[\`${f.tool}\`/\`${f.category ?? "?"}\`${f.severity ? ` ${f.severity}` : ""}] ${f.quote ?? ""}`,
+          `[\`${f.tool}\`/\`${f.category ?? "?"}\`${f.severity ? ` ${f.severity}` : ""}] ${quote}`,
       );
     }
     lines.push("");

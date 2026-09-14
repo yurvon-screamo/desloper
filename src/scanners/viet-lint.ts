@@ -28,7 +28,7 @@ export class VietLintScanner implements Scanner {
     const findings: Finding[] = [];
     for (const file of files) {
       const { code, stdout, stderr } = await runCmd(
-        [bin, file, "--root", vendorRoot, "--format", "json"],
+        [bin, file, "--root", vendorRoot, "--recursive", "--format", "json"],
         { timeoutMs: 60_000 },
       );
       if (code === 2) {
