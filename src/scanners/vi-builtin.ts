@@ -34,19 +34,16 @@ async function loadPatterns(): Promise<ViPattern[]> {
 
 /** Convert Python inline flags to JS RegExp flags; strip them from body. */
 function compilePyRegex(src: string): RegExp | null {
-  let flags = "g";
-  let body = src;
-  const inline = body.matchAll(/\(\?([msaix]+)\)/g);
-  for (const m of inline) {
-    for (const ch of m[1]) {
-      if (ch === "m" || ch === "i") flags += ch === "m" ? "m" : "i";
-      else if (ch === "s") flags += "s"; // dotAll
-      // x/a have no JS equivalent; drop silently (unused in catalog)
+  const flagSet = new Set<string>(["g"]);
+  const body = src.replace(/\(\?([msaix]+)\)/g, (_all, chars: string) => {
+    for (const ch of chars) {
+      if (ch === "m" || ch === "i" || ch === "s") flagSet.add(ch);
+      // x/a have no JS equivalent; drop (unused in catalog)
     }
-  }
-  body = body.replace(/\(\?[msaix]+\)/g, "");
+    return "";
+  });
   try {
-    return new RegExp(body, flags);
+    return new RegExp(body, [...flagSet].join(""));
   } catch {
     return null;
   }
@@ -86,12 +83,12 @@ export class ViBuiltinScanner implements Scanner {
           for (const re of regexes) {
             re.lastIndex = 0;
             let m = re.exec(line);
-            while (m && !matched) {
+            while (m) {
               findings.push(mk(this.name, lang, file, i + 1, p, m[0]));
               matched = true;
-              re.lastIndex = 0;
-              m = re.exec(line.slice(re.lastIndex + m.index + m[0].length) ? line : "");
-              break;
+              if (m.index === re.lastIndex) re.lastIndex++; // zero-width guard
+              m = re.exec(line);
+              if (m && m.index === re.lastIndex - 1 && m[0] === "") break;
             }
           }
           if (!matched && phrases.length) {

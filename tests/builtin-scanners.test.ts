@@ -57,9 +57,21 @@ describe("ViBuiltinScanner", () => {
     const r = await new ViBuiltinScanner().scan(["t.md"], "vi", new Map([["t.md", text]]));
     expect(r.findings.some((f) => f.category === "VI-HUM-D02")).toBe(true);
   });
-  test("all 10 VI-HUM ids compile (7 regex + phrases coverage)", async () => {
-    const s = new ViBuiltinScanner();
-    expect(await s.available()).toBe(true);
+  test("multiple occurrences in one line each reported", async () => {
+    const text = "vượt trội và vượt trội nữa\n";
+    const r = await new ViBuiltinScanner().scan(["t.md"], "vi", new Map([["t.md", text]]));
+    const l03 = r.findings.filter((f) => f.category === "VI-HUM-L03" && (f.quote ?? "").includes("vượt"));
+    expect(l03.length).toBeGreaterThanOrEqual(2);
+  });
+  test("catalog compiles: no silent regex drop in VI-HUM", async () => {
+    // Compile every VI-HUM regex through the same conversion the scanner
+    // uses; a future catalog edit must not silently kill patterns.
+    const { execSync } = await import("node:child_process");
+    const out = execSync(
+      `bun -e 'const m = await import("/home/yurvon/desloper/src/scanners/vi-builtin.ts"); const s = new m.ViBuiltinScanner(); process.exit(await s.available() ? 0 : 1);'`,
+      { cwd: import.meta.dir + "/../.." },
+    );
+    expect(out.length).toBeGreaterThanOrEqual(0); // exit code enforced by execSync throw
   });
 });
 
