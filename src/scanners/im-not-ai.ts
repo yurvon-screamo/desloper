@@ -1,10 +1,9 @@
 import type { Finding, Lang } from "./types.ts";
 import { failedRun, runCmd, type Scanner, type ScannerResult } from "./base.ts";
 import { join } from "node:path";
+import { vendorsDir } from "../paths.ts";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-
-const ROOT = join(import.meta.dir, "../..");
 
 /**
  * im-not-ai (epoko77-ai, MIT): Korean KatFish/post-editese metrics.
@@ -17,15 +16,15 @@ export class ImNotAiScanner implements Scanner {
   readonly langs: Lang[] = ["ko"];
 
   async available(): Promise<boolean> {
-    const py = join(ROOT, "vendors/.venv/bin/python");
-    const shim = join(ROOT, "vendors/im-not-ai/scripts/prepare_monolith_input.py");
+    const py = join(vendorsDir(), ".venv/bin/python");
+    const shim = join(vendorsDir(), "im-not-ai/scripts/prepare_monolith_input.py");
     const { code } = await runCmd([py, shim, "--help"], { timeoutMs: 15_000 });
     return code === 0;
   }
 
   async scan(files: string[], lang: Lang): Promise<ScannerResult> {
-    const py = join(ROOT, "vendors/.venv/bin/python");
-    const shim = join(ROOT, "vendors/im-not-ai/scripts/prepare_monolith_input.py");
+    const py = join(vendorsDir(), ".venv/bin/python");
+    const shim = join(vendorsDir(), "im-not-ai/scripts/prepare_monolith_input.py");
     const findings: Finding[] = [];
     for (const file of files) {
       // Content goes through a run-dir file, never through argv:

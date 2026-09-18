@@ -2,18 +2,23 @@
 
 ## What `--setup` executes
 
-- `git clone` of two actively-maintained MIT repositories into `vendors/`
+- `git clone` of two actively-maintained MIT repositories
   (humanizer-ru, im-not-ai), checked out at the commit SHAs recorded in
   config/tools.yaml (frozen pins, not branches).
 - `uv venv` + `uv pip install` of `razdel==0.5.0` and `pymorphy3==2.0.6`
   (RU morphology). No editable installs.
-- `bun install` of `avoid-ai-writing-detector` (npm, version-pinned via
-  package.json + bun.lock).
+
+Vendors land in the repo `vendors/` directory (dev checkout),
+`$DESLOPER_VENDORS` when set, or the platform data dir for compiled
+binaries (`~/.local/share/desloper/vendors` on Linux with
+`XDG_DATA_HOME` honored, `~/Library/Application Support/desloper/vendors`
+on macOS). Requires `git`, `uv` and `bash` on PATH.
 
 ## What scan runs
 
-- Built-in scanners (phrases / metrics / viet-lint / desloper P0): pure
-  local data + code, zero subprocess, zero network.
+- Built-in scanners (phrases / patterns-en / metrics / viet-lint /
+  avoid-ai-writing / desloper P0): pure local data + code, zero
+  subprocess, zero network.
 - Vendor scripts listed in config/tools.yaml. Two things desloper
   deliberately never invokes:
   - **im-not-ai LLM routes** (light/standard/heavy rewriting pipelines) —
@@ -29,7 +34,7 @@
 |---|---|---|---|
 | ilyautov/humanizer-ru | MIT | active vendor | live scanner (genre-calibrated) |
 | epoko77-ai/im-not-ai | MIT | active vendor | live deterministic shim |
-| avoid-ai-writing-detector (npm) | MIT | pinned dep | live detector |
+| avoid-ai-writing-detector (npm) | MIT | in-process dep | live detector (analyzeText, no subprocess) |
 | zero-slop (npx) | MIT | pinned dep | live scorer (local mode) |
 | texthumanize | MIT | absorbed | cliche/bureaucratic dictionaries → config/dictionaries/ |
 | Aboudjem/humanizer-skill | MIT | absorbed (dormant) | metrics/vocabulary/tokenize.js vendored into src/scanners/ |

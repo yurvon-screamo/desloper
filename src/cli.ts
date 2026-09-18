@@ -5,6 +5,7 @@ import { isAbsolute, join } from "node:path";
 import { detectLang, isConfident } from "./langdetect.ts";
 import { triage } from "./triage.ts";
 import { loadSuppressRules } from "./suppress.ts";
+import { configPath } from "./paths.ts";
 import { scanP0 } from "./scanners/p0.ts";
 import { renderMarkdown } from "./report.ts";
 import type { Finding, Lang, Report, ToolRun } from "./scanners/types.ts";
@@ -16,8 +17,6 @@ import { MetricsScanner } from "./scanners/metrics-scanner.ts";
 import { HumanizerRuScanner } from "./scanners/humanizer-ru.ts";
 import { ImNotAiScanner } from "./scanners/im-not-ai.ts";
 import { ViBuiltinScanner } from "./scanners/vi-builtin.ts";
-
-const ROOT = join(import.meta.dir, "..");
 
 function usage(code = 3): never {
   console.error(`desloper — multilingual AI-slop auditor
@@ -67,7 +66,7 @@ async function main() {
 
   if (values.setup) {
     const { runSetup } = await import("./setup.ts");
-    const ok = await runSetup(ROOT, values["dry-run"] ?? false);
+    const ok = await runSetup(values["dry-run"] ?? false);
     process.exit(ok ? 0 : 2);
   }
 
@@ -136,7 +135,7 @@ async function main() {
     }
   }
 
-  const suppress = await loadSuppressRules(join(ROOT, "config/exceptions.yaml"), ".desloper.yaml");
+  const suppress = await loadSuppressRules(configPath("exceptions.yaml"), ".desloper.yaml");
   const triaged = triage(allFindings, suppress);
   const report: Report = {
     schema_version: 1,

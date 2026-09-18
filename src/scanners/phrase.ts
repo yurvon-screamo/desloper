@@ -1,6 +1,6 @@
 import type { Finding, Lang } from "./types.ts";
 import { type Scanner, type ScannerResult } from "./base.ts";
-import { join } from "node:path";
+import { configPath } from "../paths.ts";
 
 /**
  * Built-in phrase scanner (replaces the texthumanize system CLI):
@@ -19,8 +19,6 @@ interface LangDicts {
   bureaucratic_phrases: string[];
   ai_connectors: string[];
 }
-
-const ROOT = join(import.meta.dir, "../..");
 
 // Series-distilled cliche lists (from the KO/VI deslop rounds) used to
 // top up languages texthumanize's cliches did not cover. Hangul entries
@@ -53,7 +51,7 @@ let cache: Record<string, LangDicts> | null = null;
 async function loadDicts(): Promise<Record<string, LangDicts>> {
   if (cache) return cache;
   const raw = JSON.parse(
-    await Bun.file(join(ROOT, "config/dictionaries/texthumanize-dicts.json")).text(),
+    await Bun.file(configPath("dictionaries/texthumanize-dicts.json")).text(),
   ) as { cliches_by_lang?: Record<string, Record<string, unknown>> };
   const out: Record<string, LangDicts> = {};
   for (const [lang, d] of Object.entries(raw.cliches_by_lang ?? {})) {

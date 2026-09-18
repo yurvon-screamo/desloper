@@ -1,9 +1,8 @@
 import type { Finding, Lang } from "./types.ts";
 import { failedRun, runCmd, type Scanner, type ScannerResult } from "./base.ts";
 import { join } from "node:path";
+import { vendorsDir } from "../paths.ts";
 import { parseConcatenatedJson } from "../normalize.ts";
-
-const ROOT = join(import.meta.dir, "../..");
 
 /**
  * humanizer-ru (ilyautov, MIT): 64-marker Russian scanner with genre
@@ -16,15 +15,15 @@ export class HumanizerRuScanner implements Scanner {
   readonly langs: Lang[] = ["ru"];
 
   async available(): Promise<boolean> {
-    const py = join(ROOT, "vendors/.venv/bin/python");
-    const scan = join(ROOT, "vendors/humanizer-ru/skills/humanizer-ru/scripts/scan.py");
+    const py = join(vendorsDir(), ".venv/bin/python");
+    const scan = join(vendorsDir(), "humanizer-ru/skills/humanizer-ru/scripts/scan.py");
     const { code } = await runCmd([py, scan, "--help"], { timeoutMs: 15_000 });
     return code === 0;
   }
 
   async scan(files: string[], lang: Lang): Promise<ScannerResult> {
-    const py = join(ROOT, "vendors/.venv/bin/python");
-    const scan = join(ROOT, "vendors/humanizer-ru/skills/humanizer-ru/scripts/scan.py");
+    const py = join(vendorsDir(), ".venv/bin/python");
+    const scan = join(vendorsDir(), "humanizer-ru/skills/humanizer-ru/scripts/scan.py");
     const findings: Finding[] = [];
     for (const file of files) {
       const genre = /\/(docs?|documentation|guides)\//i.test(file) ? "academic" : "marketing";

@@ -42,8 +42,13 @@ Options:
   --json          machine-readable report (schema v1)
   --lang <l>      force language: en|ru|ko|vi (skips auto-detect)
   --setup         install vendor scanners into vendors/
+                  (compiled binaries: platform data dir — see "Binary
+                  distribution" below; DESLOPER_VENDORS overrides)
   --dry-run       with --setup: print steps only
 ```
+
+`--setup` requires `git`, `uv` and `bash` on PATH (EN scanning needs
+none of them — it ships in-process).
 
 **Exit codes** (CI-safe):
 - `0` — clean (or only suppressed FPs)
@@ -55,7 +60,7 @@ Options:
 
 | Language | Built-in (zero setup) | Vendor (after --setup) |
 |---|---|---|
-| EN | phrases · patterns-en (ZeroSlop 139 patterns) · metrics (4-signal lib) | avoid-ai-writing (npm, pinned) |
+| EN | phrases · patterns-en (ZeroSlop 139 patterns) · metrics (4-signal lib) · avoid-ai-writing (in-process) | — |
 | RU | phrases (RU cliche dict) | humanizer-ru (genre-calibrated, 64 markers) |
 | KO | phrases (KO cliche dict) | im-not-ai (deterministic KatFish metrics) |
 | VI | phrases + viet-lint (43 VI-HUM patterns) | — |
@@ -81,6 +86,27 @@ suppress:
 
 This repo's own `.desloper.yaml` is a live example — it suppresses the
 findings desloper correctly flags in its own documentation.
+
+## Binary distribution
+
+Build self-contained executables (no Bun or Node on the target machine):
+
+```bash
+bun run build                    # full matrix → dist/
+bun src/build.ts bun-linux-x64   # single target
+```
+
+Every built-in scanner ships inside the binary, including the in-process
+EN detector. RU/KO vendor scanners install on demand: `desloper --setup`
+puts them under the platform data dir — `~/.local/share/desloper/vendors`
+on Linux (XDG_DATA_HOME honored), `~/Library/Application Support/desloper/vendors`
+on macOS (override anywhere with `DESLOPER_VENDORS`; needs `git`, `uv`, `bash`).
+
+macOS Gatekeeper quarantines unsigned downloaded binaries — allow in
+System Settings, or `xattr -d com.apple.quarantine desloper-*-darwin-arm64`.
+The binary bundles MIT-licensed third-party code (avoid-ai-writing-detector);
+upstream license notices ship in
+[third-party-licenses/](third-party-licenses/).
 
 ## Report
 
@@ -120,13 +146,18 @@ JSON (`--json`): schema v1 with `findings[]`, `tool_runs[]`, `summary{}`,
 
 ## Dependencies
 
-**3 runtime** (all SHA-pinned, all actively maintained):
+**2 runtime vendors** (git-pinned, actively maintained):
 
 | Vendor | Role | Why kept |
 |---|---|---|
-| avoid-ai-writing-detector (npm) | EN detector | Gate threshold calibrated on 376-document corpus |
 | ilyautov/humanizer-ru (git) | RU scanner | Genre calibration (AINL-Eval 35k texts): reduces FP from 35.9% to 4.2% |
 | epoko77-ai/im-not-ai (git) | KO metrics | baseline_v2.json: 70-pattern × 14-metric calibration matrix (LLMTrace 14k texts) |
+
+The EN detector (avoid-ai-writing-detector, npm, MIT) runs **in-process**:
+imported via its `analyzeText()` API and bundled at build time — no runtime
+Node needed. Its gate threshold was calibrated on a 376-document corpus, and
+a golden-diff test pins the adapter to deep-equal (structural) output of the
+upstream CLI.
 
 **4 absorbed** as data with attribution (see `config/dictionaries/README.md`):
 texthumanize (system CLI), humanizer-skill (dormant), vietnamese-humanizer
@@ -137,13 +168,15 @@ Zero network dependencies at scan time. Content never leaves the machine.
 ## Development
 
 ```bash
-bun test tests/          # 42 unit tests
+bun test tests/          # 47 unit tests
 bunx tsc --noEmit        # strict typecheck
 bun src/cli.ts tests/fixtures  # e2e on golden fixtures
+bun run build            # compiled binaries → dist/
 ```
 
-CI runs: typecheck + tests + full vendor e2e on clean runner
-(exit code, per-scanner findings, all 8 scanners asserted).
+CI runs: typecheck + tests + full vendor e2e (exit code, per-scanner
+findings, all 8 scanners asserted) + build matrix with native smoke +
+clean-room artifact e2e (binary provisions its own vendors).
 
 ## License
 

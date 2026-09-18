@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { triage } from "../src/triage.ts";
 import { parseSuppressYaml } from "../src/suppress.ts";
 import { loadSuppressRules } from "../src/suppress.ts";
-import { join } from "node:path";
+import { configPath } from "../src/paths.ts";
 import type { Finding } from "../src/scanners/types.ts";
 
 /**
@@ -14,7 +14,7 @@ import type { Finding } from "../src/scanners/types.ts";
 describe("shipped exceptions.yaml behavioral match", () => {
   test("RU dash markers from humanizer-ru are suppressed", async () => {
     const rules = await loadSuppressRules(
-      join(import.meta.dir, "../config/exceptions.yaml"),
+      configPath("exceptions.yaml"),
       "/nonexistent/.desloper.yaml",
     );
     const mk = (category: string): Finding => ({

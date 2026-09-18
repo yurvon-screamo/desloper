@@ -1,6 +1,6 @@
 import type { Finding, Lang } from "./types.ts";
 import { type Scanner, type ScannerResult } from "./base.ts";
-import { join } from "node:path";
+import { configPath } from "../paths.ts";
 
 /**
  * Built-in Vietnamese scanner: matches the pattern catalog of
@@ -20,13 +20,12 @@ interface ViPattern {
   signals?: { regex?: string[]; phrases?: string[] };
 }
 
-const ROOT = join(import.meta.dir, "../..");
 let cache: ViPattern[] | null = null;
 
 async function loadPatterns(): Promise<ViPattern[]> {
   if (cache) return cache;
   const raw = JSON.parse(
-    await Bun.file(join(ROOT, "config/dictionaries/vi-patterns.json")).text(),
+    await Bun.file(configPath("dictionaries/vi-patterns.json")).text(),
   ) as Record<string, ViPattern[]>;
   cache = Object.values(raw).flat();
   return cache;

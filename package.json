@@ -9,7 +9,8 @@
   "private": true,
   "scripts": {
     "start": "bun src/cli.ts",
-    "test": "bun test tests/"
+    "test": "bun test tests/",
+    "build": "bun src/build.ts"
   },
   "dependencies": {
     "avoid-ai-writing-detector": "3.35.0"

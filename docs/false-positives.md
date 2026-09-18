@@ -33,3 +33,11 @@ per-project via `.desloper.yaml`.
 - **Scores are probabilistic surface meters.** High `ai_likelihood` with low
   evidence = genre artifact (e.g. emoji-heavy README scoring 94.9 at evidence
   20.7). desloper reports both.
+- **EN detector runs without a per-file timeout.** The former subprocess
+  call had a 30s kill; the in-process `analyzeText()` is synchronous and
+  unbounded. Deterministic pattern scan, never hung in the production
+  series — if it ever does, the escalation is a Worker wrapper.
+- **Invalid UTF-8 is scanned, not failed, by the EN detector.** The former
+  subprocess hard-failed non-UTF-8 files (audit incomplete); in-process
+  text arrives replacement-decoded, so the audit continues on degraded
+  text. Finding counts on such files may differ from the upstream CLI.

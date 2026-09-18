@@ -1,6 +1,6 @@
 import type { Finding, Lang } from "./types.ts";
 import { type Scanner, type ScannerResult } from "./base.ts";
-import { join } from "node:path";
+import { configPath } from "../paths.ts";
 
 /**
  * Built-in EN structural-pattern scanner (replaces zero-slop npx dep):
@@ -20,13 +20,12 @@ interface Pattern {
   re?: RegExp;
 }
 
-const ROOT = join(import.meta.dir, "../..");
 let cache: { patterns: Pattern[]; lexicon: Record<string, number> } | null = null;
 
 async function load(): Promise<{ patterns: Pattern[]; lexicon: Record<string, number> }> {
   if (cache) return cache;
   const raw = JSON.parse(
-    await Bun.file(join(ROOT, "config/dictionaries/zero-slop-patterns.json")).text(),
+    await Bun.file(configPath("dictionaries/zero-slop-patterns.json")).text(),
   ) as { patterns: Pattern[]; lexicon: Record<string, number> };
   // Compile with Python→JS flag conversion (same approach as vi-builtin)
   const compiled = raw.patterns
