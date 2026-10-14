@@ -1,11 +1,13 @@
 # desloper
 
 Multilingual **AI-slop auditor** for content teams: scans markdown in English,
-Russian, Korean, and Vietnamese; triages findings into fixable priorities vs
+Russian, Korean, Vietnamese, and Japanese; triages findings into fixable priorities vs
 documented false positives; exits CI-safe.
 
 Built from a production deslop series (5 PR cycles on a real landing page,
-~70k words across 4 languages). The tool's core value is not detection —
+~70k words across 4 languages) plus corpus-calibrated JA detection
+(137 human / 406 AI texts, 7 models, via the natural-japanese vendor).
+The tool's core value is not detection —
 it's **triage**: knowing what to fix, what's structural, and what's a
 documented genre false positive you should leave alone.
 
@@ -28,7 +30,7 @@ bun install
 # Audit (built-in scanners work immediately, zero setup):
 bun src/cli.ts path/to/content/
 
-# Optional: enable RU/KO vendor scanners (2 git repos + uv venv):
+# Optional: enable RU/KO/JA vendor scanners (3 git repos + uv venv):
 bun src/cli.ts --setup
 ```
 
@@ -40,7 +42,7 @@ desloper --setup           one-time vendor install (non-interactive)
 
 Options:
   --json          machine-readable report (schema v1)
-  --lang <l>      force language: en|ru|ko|vi (skips auto-detect)
+  --lang <l>      force language: en|ru|ko|vi|ja (skips auto-detect)
   --setup         install vendor scanners into vendors/
                   (compiled binaries: platform data dir — see "Binary
                   distribution" below; DESLOPER_VENDORS overrides)
@@ -64,8 +66,9 @@ none of them — it ships in-process).
 | RU | phrases (RU cliche dict) · ru-structural (fragment leads, dash density, arrows in prose) | humanizer-ru (genre-calibrated, 64 markers) |
 | KO | phrases (KO cliche dict) | im-not-ai (deterministic KatFish metrics) |
 | VI | phrases + viet-lint (43 VI-HUM patterns) | — |
+| JA | phrases (JA cliche dict) + ja-lint (JA-AI patterns from textlint-ja preset) | natural-japanese (corpus-calibrated: rhythm burstiness, paragraph uniformity, translationese — 137 human / 406 AI texts) |
 
-The built-in `phrases` scanner works across all four languages using AI
+The built-in `phrases` scanner works across all five languages using AI
 cliche/bureaucratic dictionaries extracted from texthumanize + lists
 distilled during the production series.
 
@@ -97,7 +100,7 @@ bun src/build.ts bun-linux-x64   # single target
 ```
 
 Every built-in scanner ships inside the binary, including the in-process
-EN detector. RU/KO vendor scanners install on demand: `desloper --setup`
+EN detector. RU/KO/JA vendor scanners install on demand: `desloper --setup`
 puts them under the platform data dir — `~/.local/share/desloper/vendors`
 on Linux (XDG_DATA_HOME honored), `~/Library/Application Support/desloper/vendors`
 on macOS (override anywhere with `DESLOPER_VENDORS`; needs `git`, `uv`, `bash`).
@@ -146,12 +149,13 @@ JSON (`--json`): schema v1 with `findings[]`, `tool_runs[]`, `summary{}`,
 
 ## Dependencies
 
-**2 runtime vendors** (git-pinned, actively maintained):
+**3 runtime vendors** (git-pinned, actively maintained):
 
 | Vendor | Role | Why kept |
 |---|---|---|
 | ilyautov/humanizer-ru (git) | RU scanner | Genre calibration (AINL-Eval 35k texts): reduces FP from 35.9% to 4.2% |
 | epoko77-ai/im-not-ai (git) | KO metrics | baseline_v2.json: 70-pattern × 14-metric calibration matrix (LLMTrace 14k texts) |
+| coji/natural-japanese (git) | JA detectors | Corpus-calibrated thresholds (137 human / 406 AI texts, 7 models): rhythm and structure tells that lexicon-only scanners miss |
 
 The EN detector (avoid-ai-writing-detector, npm, MIT) runs **in-process**:
 imported via its `analyzeText()` API and bundled at build time — no runtime
@@ -168,14 +172,14 @@ Zero network dependencies at scan time. Content never leaves the machine.
 ## Development
 
 ```bash
-bun test tests/          # 78 unit tests
+bun test tests/          # 99 unit tests
 bunx tsc --noEmit        # strict typecheck
 bun src/cli.ts tests/fixtures  # e2e on golden fixtures
 bun run build            # compiled binaries → dist/
 ```
 
 CI runs: typecheck + tests + full vendor e2e (exit code, per-scanner
-findings, all 9 scanners asserted) + build matrix with native smoke +
+findings, all 11 scanners asserted) + build matrix with native smoke +
 clean-room artifact e2e (binary provisions its own vendors).
 
 ## License

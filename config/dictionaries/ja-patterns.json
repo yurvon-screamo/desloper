@@ -1,0 +1,187 @@
+{
+  "formatting": [
+    {
+      "id": "JA-AI-L01",
+      "name": "no-ai-list-formatting / emoji list items",
+      "skill": "textlint-ja-preset-ai-writing",
+      "category": "formatting",
+      "finding_type": "deterministic",
+      "scope": "list-item",
+      "aggregation": "occurrence",
+      "severity": "warn",
+      "confidence": "high",
+      "summary": "Decorative emoji (✅ ❌ 💡 🚀 …) inside markdown list items read as machine-generated structure.",
+      "signals": {
+        "regex": [
+          "^[\\s]*(?:[-*+]|\\d+[.)])\\s+.*?(✅|❌|⭐|✨|💯|⚠️|❗|❓|💥|🔥|⚡|💪|🚀|💡|🤔|💭|🧠|🎯|📈|📊|🏆|👍|👎|😊|😎|🎉|🌟|📝|📋|✏️|🖊️|💼)"
+        ]
+      },
+      "why_it_matters": "Upstream: flashy emoji in list items give a mechanical impression; human tech writing in JA rarely decorates bullets.",
+      "rewrite_strategy": [
+        "Drop the emoji, keep the label as plain text."
+      ]
+    },
+    {
+      "id": "JA-AI-L02",
+      "name": "no-ai-list-formatting / bold-label list items",
+      "skill": "textlint-ja-preset-ai-writing",
+      "category": "formatting",
+      "finding_type": "deterministic",
+      "scope": "list-item",
+      "aggregation": "occurrence",
+      "severity": "warn",
+      "confidence": "high",
+      "summary": "List items shaped like `- **label**: description` (or dash-separated) are an AI-typical list template.",
+      "signals": {
+        "regex": [
+          "^[\\s]*(?:[-*+]|\\d+[.)])\\s+\\*\\*([^*]+)\\*\\*(?:\\s*[:：]|\\s+[-—–](?=\\s))"
+        ]
+      },
+      "why_it_matters": "Upstream: bold+separator list items look machine-generated; plain `label: description` reads natural.",
+      "rewrite_strategy": [
+        "Unbold the label or drop the bold+separator template."
+      ]
+    },
+    {
+      "id": "JA-AI-E01",
+      "name": "no-ai-emphasis-patterns / emoji + bold combo",
+      "skill": "textlint-ja-preset-ai-writing",
+      "category": "formatting",
+      "finding_type": "deterministic",
+      "scope": "line",
+      "aggregation": "occurrence",
+      "severity": "warn",
+      "confidence": "high",
+      "summary": "Emoji immediately followed by bold text (✅ **高速**) is a machine-emphasis signature.",
+      "signals": {
+        "regex": [
+          "(ℹ️|🔍|✅|❌|⚠️|💡|📝|📋|📌|🔗|🎯|🚀|⭐|✨|💯|🔥|📊|📈)\\s*\\*\\*([^*]+)\\*\\*"
+        ]
+      },
+      "why_it_matters": "Upstream: the emoji+bold combination gives a mechanical impression in prose and lists alike.",
+      "rewrite_strategy": [
+        "Keep one emphasis device at most: drop the emoji or the bold."
+      ]
+    },
+    {
+      "id": "JA-AI-E02",
+      "name": "no-ai-emphasis-patterns / bold info prefixes",
+      "skill": "textlint-ja-preset-ai-writing",
+      "category": "formatting",
+      "finding_type": "deterministic",
+      "scope": "line",
+      "aggregation": "occurrence",
+      "severity": "warn",
+      "confidence": "medium",
+      "summary": "Bold generic info labels (**注意**, **重要**, **例**…) read as machine formatting.",
+      "signals": {
+        "regex": [
+          "\\*\\*(検出される例|推奨される表現|設定例|使用例|良い例|悪い例|サンプル|おすすめ|ポイント|チェック|確認|補足|参考|メモ|注意|重要|推奨|例)(?:[：:][^*]*)?\\*\\*"
+        ]
+      },
+      "why_it_matters": "Upstream: bolded generic labels give a mechanical impression; context sentences make prefixes unnecessary.",
+      "rewrite_strategy": [
+        "Write the note as a plain sentence instead of a bolded label."
+      ]
+    },
+    {
+      "id": "JA-AI-E03",
+      "name": "no-ai-emphasis-patterns / bold in headings",
+      "skill": "textlint-ja-preset-ai-writing",
+      "category": "formatting",
+      "finding_type": "deterministic",
+      "scope": "heading",
+      "aggregation": "occurrence",
+      "severity": "warn",
+      "confidence": "high",
+      "summary": "Bold (or __underline-bold__) inside a markdown heading is redundant: the heading is already emphasis.",
+      "signals": {
+        "regex": [
+          "^#{1,6}\\s+.*(?:\\*\\*|__)(.+?)(?:\\*\\*|__)"
+        ]
+      },
+      "why_it_matters": "Upstream: heading text is already emphasized; nested bold is redundant and typical of generated docs.",
+      "rewrite_strategy": [
+        "Remove the bold markers, keep the heading text."
+      ]
+    }
+  ],
+  "hype": [
+    {
+      "id": "JA-AI-H01",
+      "name": "no-ai-hype-expressions / absoluteness (weak intensifiers)",
+      "skill": "textlint-ja-preset-ai-writing",
+      "category": "lexical",
+      "finding_type": "deterministic",
+      "scope": "line",
+      "aggregation": "occurrence",
+      "severity": "info",
+      "confidence": "low",
+      "summary": "Absolute/completeness intensifiers (完全に, 最高の, 大幅に…) — common in legitimate JA prose, weak signal.",
+      "signals": {
+        "phrases": [
+          "究極の",
+          "完全に",
+          "完璧な",
+          "最高の",
+          "最先端の",
+          "大幅に"
+        ]
+      },
+      "why_it_matters": "Upstream suggests concrete numbers instead of absoluteness. These words also occur in normal prose, so desloper triages them P2 (weak).",
+      "rewrite_strategy": [
+        "Replace with the concrete number or degree where possible."
+      ]
+    },
+    {
+      "id": "JA-AI-H02",
+      "name": "no-ai-hype-expressions / abstract effect",
+      "skill": "textlint-ja-preset-ai-writing",
+      "category": "lexical",
+      "finding_type": "deterministic",
+      "scope": "line",
+      "aggregation": "occurrence",
+      "severity": "high",
+      "confidence": "medium",
+      "summary": "Abstract/metaphorical effect hype (魔法のように-family; 革命的-family live in the phrases scanner).",
+      "signals": {
+        "phrases": [
+          "驚異的な",
+          "可能性を解き放つ",
+          "潜在能力を引き出す",
+          "民主化する",
+          "スーパーチャージ",
+          "驚嘆させ"
+        ]
+      },
+      "why_it_matters": "Upstream: metaphorical abstract claims lack verifiable content; concrete mechanisms read credible.",
+      "rewrite_strategy": [
+        "State the concrete mechanism or outcome instead of the abstract effect."
+      ]
+    },
+    {
+      "id": "JA-AI-H03",
+      "name": "no-ai-hype-expressions / predictive authority",
+      "skill": "textlint-ja-preset-ai-writing",
+      "category": "lexical",
+      "finding_type": "deterministic",
+      "scope": "line",
+      "aggregation": "occurrence",
+      "severity": "high",
+      "confidence": "medium",
+      "summary": "Authority/prophecy hype (業界を再定義-family; overlapping entries live in the phrases scanner).",
+      "signals": {
+        "phrases": [
+          "不可避の",
+          "新たな基準を設定",
+          "フロンティアを開拓",
+          "根本的に変革"
+        ]
+      },
+      "why_it_matters": "Upstream: prophetic industry claims are boilerplate; concrete change descriptions read credible.",
+      "rewrite_strategy": [
+        "Name the concrete change instead of declaring inevitability."
+      ]
+    }
+  ]
+}

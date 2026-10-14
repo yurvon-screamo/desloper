@@ -18,6 +18,7 @@ import { HumanizerRuScanner } from "./scanners/humanizer-ru.ts";
 import { ImNotAiScanner } from "./scanners/im-not-ai.ts";
 import { NaturalJapaneseScanner } from "./scanners/natural-japanese.ts";
 import { ViBuiltinScanner } from "./scanners/vi-builtin.ts";
+import { JaBuiltinScanner } from "./scanners/ja-builtin.ts";
 import { RuStructuralScanner } from "./scanners/ru-structural.ts";
 
 function usage(code = 3): never {
@@ -88,6 +89,7 @@ async function main() {
     new ImNotAiScanner(),
     new NaturalJapaneseScanner(),
     new ViBuiltinScanner(),
+    new JaBuiltinScanner(),
     new RuStructuralScanner(),
   ];
 

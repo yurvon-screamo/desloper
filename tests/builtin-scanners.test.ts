@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { PhraseScanner } from "../src/scanners/phrase.ts";
 import { ViBuiltinScanner } from "../src/scanners/vi-builtin.ts";
+import { JaBuiltinScanner } from "../src/scanners/ja-builtin.ts";
 import { MetricsScanner } from "../src/scanners/metrics-scanner.ts";
 
 const en = "We're thrilled to announce cutting-edge tech. In conclusion, only time will tell.";
@@ -100,6 +101,57 @@ describe("ViBuiltinScanner", () => {
     }
     // The taxon must keep real detectors (not degenerate to phrases-only).
     expect(withSignals).toBeGreaterThanOrEqual(9);
+  });
+});
+
+describe("JaBuiltinScanner", () => {
+  test("JA-AI-L01 emoji in list item detected with line number", async () => {
+    const text = "序文です。\n- ✅ 高速な処理を実現します\n";
+    const r = await new JaBuiltinScanner().scan(["t.md"], "ja", new Map([["t.md", text]]));
+    expect(r.findings.some((f) => f.category === "JA-AI-L01" && f.line === 2)).toBe(true);
+  });
+  test("JA-AI-L02 bold-label list item detected", async () => {
+    const text = "- **注意**: これは注意項目です\n";
+    const r = await new JaBuiltinScanner().scan(["t.md"], "ja", new Map([["t.md", text]]));
+    expect(r.findings.some((f) => f.category === "JA-AI-L02")).toBe(true);
+  });
+  test("JA-AI-E01 emoji+bold combo detected", async () => {
+    const text = "✅ **高速** な処理を実現します\n";
+    const r = await new JaBuiltinScanner().scan(["t.md"], "ja", new Map([["t.md", text]]));
+    expect(r.findings.some((f) => f.category === "JA-AI-E01")).toBe(true);
+  });
+  test("JA-AI-E02 bold info prefix detected", async () => {
+    const text = "**重要**： 導入前には見直しが必要です。\n";
+    const r = await new JaBuiltinScanner().scan(["t.md"], "ja", new Map([["t.md", text]]));
+    expect(r.findings.some((f) => f.category === "JA-AI-E02")).toBe(true);
+  });
+  test("JA-AI-E03 bold inside heading detected", async () => {
+    const text = "## **圧倒的な速度**で仕事をする\n";
+    const r = await new JaBuiltinScanner().scan(["t.md"], "ja", new Map([["t.md", text]]));
+    expect(r.findings.some((f) => f.category === "JA-AI-E03" && f.line === 1)).toBe(true);
+  });
+  test("JA-AI-H02 abstract hype phrase detected", async () => {
+    const text = "このツールは業務を民主化するものです。\n";
+    const r = await new JaBuiltinScanner().scan(["t.md"], "ja", new Map([["t.md", text]]));
+    expect(r.findings.some((f) => f.category === "JA-AI-H02")).toBe(true);
+  });
+  test("plain JA prose produces no ja-lint findings", async () => {
+    const text = "昨日、駅前の新しいパン屋に入ってみた。クロワッサンが売り切れだったので、メロンパンを買った。\n";
+    const r = await new JaBuiltinScanner().scan(["t.md"], "ja", new Map([["t.md", text]]));
+    expect(r.findings.length).toBe(0);
+  });
+  test("catalog compiles: no silent regex drop in JA-AI", async () => {
+    const { compileRuleRegex } = await import("../src/scanners/ja-builtin.ts");
+    const catalog = JSON.parse(
+      await Bun.file("config/dictionaries/ja-patterns.json").text(),
+    ) as Record<string, { id: string; signals?: { regex?: string[]; phrases?: string[] } }[]>;
+    const ja = Object.values(catalog).flat().filter((p) => p.id.startsWith("JA-AI"));
+    expect(ja.length).toBeGreaterThan(0);
+    for (const p of ja) {
+      for (const src of p.signals?.regex ?? []) {
+        expect(compileRuleRegex(src)).not.toBeNull();
+      }
+    }
   });
 });
 

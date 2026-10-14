@@ -63,3 +63,23 @@ per-project via `.desloper.yaml`.
   subprocess hard-failed non-UTF-8 files (audit incomplete); in-process
   text arrives replacement-decoded, so the audit continues on degraded
   text. Finding counts on such files may differ from the upstream CLI.
+- **JA false-positive map is provisional.** Unlike EN/RU/KO/VI, the JA
+  dictionaries were not yet exercised on a real content corpus — the
+  cliche list is curated from corpus research (coji/natural-japanese
+  calibration, 137 human / 406 AI texts) and MIT-licensed catalogs, not
+  from production deslop rounds. Expect the JA FP map to grow as real
+  content is audited; the 最後に/まさに exclusion (human-frequency words,
+  63% of the calibration corpus's false positives) is the one documented
+  trap so far. The P0 placeholder scanner also stays EN-convention
+  ([your …], INSERT, Lorem ipsum): JA templates use the same conventions,
+  and 【ここに…】 patterns would false-positive on legitimate JA docs.
+- **JA vendor lint exits 0 by design.** natural-japanese `lint.py` is a
+  lint, not a gate: it exits 0 regardless of finding count (1 only on
+  input errors). desloper therefore treats a nonzero exit OR unparseable
+  JSON as a tool failure (audit incomplete, exit 2) — a "clean" JA file
+  is always backed by parsed findings, never by an exit code.
+- **ja-lint formatting rules are line-scoped.** The upstream textlint
+  preset evaluates AST nodes (ListItem/Header); the absorbed data
+  matches markdown line shapes instead. A list item split across two
+  physical lines, or bold spanning lines, can be missed. Deterministic
+  and conservative — no FP direction risk, only recall loss.

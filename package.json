@@ -1,7 +1,7 @@
 {
   "name": "desloper",
   "version": "0.1.0",
-  "description": "Multilingual AI-slop auditor: orchestrates ready-made detectors (EN/RU/KO/VI) and triages findings against a false-positive map distilled from production deslop series.",
+  "description": "Multilingual AI-slop auditor: orchestrates ready-made detectors (EN/RU/KO/VI/JA) and triages findings against a false-positive map distilled from production deslop series.",
   "type": "module",
   "module": "src/cli.ts",
   "bin": { "desloper": "./src/cli.ts" },

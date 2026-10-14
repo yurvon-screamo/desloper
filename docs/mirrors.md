@@ -1,6 +1,6 @@
 # Mirrors: keeping localizations in sync
 
-When content exists in several locales (EN/RU/KO/VI files of the same page),
+When content exists in several locales (EN/RU/KO/VI/JA files of the same page),
 every fix in one locale creates debt in the others. The series' reviewer
 tracked this with a sync table; the discipline is:
 

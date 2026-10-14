@@ -80,6 +80,18 @@ describe("triage", () => {
     const out = triage([{ ...base, category: "ja:some_future_detector" }], []);
     expect(out[0].priority).toBe("P1");
   });
+  test("ja-lint formatting category is P2", () => {
+    const out = triage([{ ...base, tool: "ja-lint", category: "JA-AI-L01", severity: "warn" }], []);
+    expect(out[0].priority).toBe("P2");
+  });
+  test("ja-lint weak intensifier hype is P2", () => {
+    const out = triage([{ ...base, tool: "ja-lint", category: "JA-AI-H01", severity: "info" }], []);
+    expect(out[0].priority).toBe("P2");
+  });
+  test("ja-lint strong hype defaults to P1", () => {
+    const out = triage([{ ...base, tool: "ja-lint", category: "JA-AI-H03", severity: "high" }], []);
+    expect(out[0].priority).toBe("P1");
+  });
   test("known category maps to P1", () => {
     expect(triage([base], [])[0].priority).toBe("P1");
   });

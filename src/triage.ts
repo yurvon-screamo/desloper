@@ -48,6 +48,10 @@ const P2_CATEGORIES = new Set([
   "ja:low_lexical_diversity_ttr", "ja:low_specificity", "ja:sentence_too_long",
   "ja:kanji_run", "ja:no_chain", "ja:numbered_phase_structure", "ja:buried_list",
   "ja:high_bold_density", "ja:high_bullet_ratio", "ja:high_emoji_symbol_density",
+  // ja-lint (textlint-ja preset absorbed as data): formatting rules and
+  // the weak-intensifier hype subset are P2 material (upstream itself is
+  // suggestion-level there); strong hype H02/H03 default to visible P1.
+  "JA-AI-L01", "JA-AI-L02", "JA-AI-E01", "JA-AI-E02", "JA-AI-E03", "JA-AI-H01",
 ]);
 
 /** Upstream corpus calibration: aaw allows up to 6 findings per file. */

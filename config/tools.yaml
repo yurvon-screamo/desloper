@@ -7,13 +7,17 @@
 # BUILT-IN scanners (no vendors, no network, data under config/dictionaries):
 #   - phrases       (all langs) — AI cliche/bureaucratic dictionaries
 #                    extracted from texthumanize (MIT) + series-distilled
-#                    KO/VI lists. Replaced the texthumanize system CLI.
+#                    KO/VI/JA lists. Replaced the texthumanize system CLI.
 #   - metrics       (en) — vendored dependency-free lib of
 #                    Aboudjem/humanizer-skill (MIT): lexical tells +
 #                    burstiness + trigram repetition + MATTR.
 #   - viet-lint     (vi) — vietnamese-humanizer (MIT, longhang2004)
 #                    pattern catalog converted to JSON; dormant upstream
 #                    absorbed as data.
+#   - ja-lint       (ja) — textlint-ja/textlint-rule-preset-ai-writing
+#                    (MIT, azu) converted to JSON; colon-continuation
+#                    (kuromojin-dependent) and ai-tech-writing-guideline
+#                    (FP-prone) deliberately not absorbed.
 #   - desloper      (all) — vendor-independent P0 placeholder scanner.
 #   - ru-structural (ru) — built-in structural detectors (fragment
 #                    leads, em-dash DENSITY, arrows in prose); thresholds
