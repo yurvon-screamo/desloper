@@ -41,6 +41,18 @@ tools:
     output: "run_dir=/path risk_band=<low|…> risk_score=N route_hint=…"
     vendor_exit: 0
 
+  - name: natural-japanese
+    source: git https://github.com/coji/natural-japanese (MIT, 1.9k stars)
+    sha: 74647ae4331e310eb7ac93e3038a133d08be5acd
+    langs: [ja]
+    invoke: "vendors/.venv/bin/python vendors/natural-japanese/skills/natural-japanese/scripts/lint.py <file> --genre essay --json"
+    deps: sudachipy==0.7.0, sudachidict-core==20260723.1 (uv venv)
+    mode: audit-only lint.py; deterministic corpus-calibrated detectors only
+      (137 human / 406 AI texts, 7 models); the vendor's LLM rewrite skill
+      (SKILL.md) is deliberately never invoked
+    output: "json {file, stats, findings[]{line, category, excerpt, severity(info|warn|critical), detail, related_lines?}}"
+    vendor_exit: "0 always (finding count irrelevant by design); 1 only on input error"
+
 # REMOVED VENDORS (absorbed as data with attribution, config/dictionaries/):
 #   texthumanize (system CLI)   -> cliche/bureaucratic dictionaries (en/ru/ko/vi)
 #   Aboudjem/humanizer-skill    -> src/scanners/{metrics,vocabulary,tokenize}.js vendored

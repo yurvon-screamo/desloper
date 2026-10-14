@@ -13,7 +13,7 @@ jq -e '.summary.tool_failures == 0' "$report"
 jq -e '.summary.p0 == 2' "$report"
 # Every scanner must produce at least one finding on the fixtures
 # (regressions to zero-findings must fail CI).
-for t in desloper phrases avoid-ai-writing patterns-en metrics humanizer-ru im-not-ai viet-lint ru-structural; do
+for t in desloper phrases avoid-ai-writing patterns-en metrics humanizer-ru im-not-ai natural-japanese viet-lint ru-structural; do
   jq -e --arg t "$t" '[.tool_runs[] | select(.tool==$t) | .findings] | add >= 1' "$report"
 done
 jq -e '.language_uncertain | type == "array"' "$report"

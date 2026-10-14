@@ -16,6 +16,7 @@ import { PatternScanner } from "./scanners/pattern-en.ts";
 import { MetricsScanner } from "./scanners/metrics-scanner.ts";
 import { HumanizerRuScanner } from "./scanners/humanizer-ru.ts";
 import { ImNotAiScanner } from "./scanners/im-not-ai.ts";
+import { NaturalJapaneseScanner } from "./scanners/natural-japanese.ts";
 import { ViBuiltinScanner } from "./scanners/vi-builtin.ts";
 import { RuStructuralScanner } from "./scanners/ru-structural.ts";
 
@@ -85,6 +86,7 @@ async function main() {
     new MetricsScanner(),
     new HumanizerRuScanner(),
     new ImNotAiScanner(),
+    new NaturalJapaneseScanner(),
     new ViBuiltinScanner(),
     new RuStructuralScanner(),
   ];

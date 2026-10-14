@@ -49,11 +49,11 @@ while IFS='|' read -r name repo sha; do
   fi
 done <<< "$pins"
 
-step "python venv (uv) for RU/KO/VI scanners"
+step "python venv (uv) for RU/KO/JA scanners"
 VENV="$VENDORS_DIR/.venv"
 if [ "$DRY_RUN" != "true" ]; then
   [ -d "$VENV" ] || uv venv "$VENV" --quiet
-  uv pip install --python "$VENV/bin/python" --quiet "razdel==0.5.0" "pymorphy3==2.0.6"
+  uv pip install --python "$VENV/bin/python" --quiet "razdel==0.5.0" "pymorphy3==2.0.6" "sudachipy==0.7.0" "sudachidict-core==20260723.1"
 fi
 
 echo "OK: vendors ready"

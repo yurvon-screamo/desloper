@@ -27,9 +27,28 @@ const P1_CATEGORIES = new Set([
   "hollow-intensifier", "low-ttr", "cross-para-burstiness", "formatting",
   "dev-blog-boilerplate", "ai-placeholder", "zero-slop-hit", "humanizer-score",
   "ko:risk_band", "p0-placeholder",
+  // natural-japanese phrase/template-level tells; every other ja: category
+  // is rhythm/structure and lives in P2_CATEGORIES below.
+  "ja:forbidden_phrase", "ja:antithesis_repetition", "ja:boilerplate_heading",
+  "ja:double_negative",
 ]);
 const P1_CATEGORY_PREFIXES = ["ru:", "VI-HUM", "zs:"];
-const P2_CATEGORIES = new Set(["linkedin", "triads", "rhythm", "scaffolding", "ru:dash-density"]);
+const P2_CATEGORIES = new Set([
+  "linkedin", "triads", "rhythm", "scaffolding", "ru:dash-density",
+  // natural-japanese rhythm/structure detectors (category-based mapping:
+  // vendor severity is a hint, not the priority axis — low_sentence_variance
+  // emits warn but is rhythm = P2). Unknown ja: categories are NOT listed
+  // here, so vendor updates default to visible P1, never silent P2.
+  "ja:low_burstiness", "ja:low_sentence_variance", "ja:uniform_paragraph_structure",
+  "ja:high_length_autocorrelation", "ja:nominal_ending", "ja:translationese",
+  "ja:translationese_morph", "ja:english_syntax_cleft_because",
+  "ja:english_syntax_inanimate_subject", "ja:inanimate_subject_morph",
+  "ja:repeated_sentence_lead", "ja:repeated_syntax_template",
+  "ja:paragraph_lead_conjunction", "ja:low_lexical_diversity_mtld",
+  "ja:low_lexical_diversity_ttr", "ja:low_specificity", "ja:sentence_too_long",
+  "ja:kanji_run", "ja:no_chain", "ja:numbered_phase_structure", "ja:buried_list",
+  "ja:high_bold_density", "ja:high_bullet_ratio", "ja:high_emoji_symbol_density",
+]);
 
 /** Upstream corpus calibration: aaw allows up to 6 findings per file. */
 const AAW_GATE = 6;
