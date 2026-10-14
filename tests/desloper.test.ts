@@ -34,6 +34,16 @@ describe("detectLang", () => {
   test("by path segment vi", () => {
     expect(detectLang("vi/index.md", "")).toBe("vi");
   });
+  test("by path segment ja (informal jp segment too)", () => {
+    expect(detectLang("content/ja/post.md", "")).toBe("ja");
+    expect(detectLang("blog/jp/entry.md", "")).toBe("ja");
+  });
+  test("by script: japanese kana text", () => {
+    expect(detectLang("x.md", "これは日本語のテキストです。ひらがなとカタカナが含まれています。")).toBe("ja");
+  });
+  test("kanji without kana is NOT ja (zh ambiguity) — falls to en", () => {
+    expect(detectLang("x.md", "这是一个测试文档。我们在这里讨论技术问题。")).toBe("en");
+  });
   test("by script: korean text", () => {
     expect(detectLang("x.md", "한국어 텍스트입니다. 안녕하세요 세계입니다. 한글이 많습니다.")).toBe("ko");
   });
@@ -57,6 +67,18 @@ describe("triage", () => {
   test("placeholder is P0", () => {
     const out = triage([{ ...base, quote: 'Search "learn japanese in [your language]" runs' }], []);
     expect(out[0].priority).toBe("P0");
+  });
+  test("ja:forbidden_phrase is P1", () => {
+    const out = triage([{ ...base, category: "ja:forbidden_phrase", quote: "と言えるでしょう" }], []);
+    expect(out[0].priority).toBe("P1");
+  });
+  test("ja:low_burstiness is P2 by category despite warn severity", () => {
+    const out = triage([{ ...base, category: "ja:low_burstiness", severity: "warn" }], []);
+    expect(out[0].priority).toBe("P2");
+  });
+  test("unknown ja: category defaults to visible P1", () => {
+    const out = triage([{ ...base, category: "ja:some_future_detector" }], []);
+    expect(out[0].priority).toBe("P1");
   });
   test("known category maps to P1", () => {
     expect(triage([base], [])[0].priority).toBe("P1");

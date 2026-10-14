@@ -8,7 +8,7 @@ import { configPath } from "../paths.ts";
  * dictionaries extracted from texthumanize (MIT) — see
  * config/dictionaries/texthumanize-dicts.json — plus the KO/VI
  * cliche lists distilled during the production series.
- * Zero subprocess, zero network, works for all four languages.
+ * Zero subprocess, zero network, works for all five languages.
  * Cliches are strong signals (P1); bureaucratic phrases and connectors
  * are weak signals (severity "weak" -> P2 by triage) that matter in
  * repetition, so they surface from their second occurrence.
@@ -23,6 +23,11 @@ interface LangDicts {
 // Series-distilled cliche lists (from the KO/VI deslop rounds) used to
 // top up languages texthumanize's cliches did not cover. Hangul entries
 // are 2-3 syllable blocks — do NOT apply latin-oriented length floors.
+// JA list: hype expressions from textlint-ja/textlint-rule-preset-ai-writing
+// (MIT) + template preambles/closers from public JA AI-slop catalogs.
+// Corpus-informed exclusions (coji/natural-japanese calibration, 137
+// human / 406 AI texts): 最後に and まさに are HUMAN-frequency words
+// (63% of that corpus's false positives) and must stay out.
 const SERIES_CLICHES: Record<Lang, string[]> = {
   en: [],
   ru: [],
@@ -36,14 +41,34 @@ const SERIES_CLICHES: Record<Lang, string[]> = {
     "không chỉ", "tóm lại", "kết luận là", "hơn nữa", "thêm vào đó",
     "bên cạnh đó", "đột phá", "vượt trội", "tuyệt vời", "khai mở tiềm năng",
   ],
+  ja: [
+    "革命的", "画期的", "圧倒的に", "劇的に", "完全ガイド", "ゲームチェンジャー",
+    "パラダイムシフト", "世界初", "次世代の", "魔法のように", "奇跡的な",
+    "業界を再定義", "未来を変える", "と言っても過言ではない", "に他ならない",
+    "いかがでしたでしょうか", "お役に立てれば幸い", "本記事では", "ご紹介し",
+    "結論から言うと",
+  ],
+};
+
+// Series-distilled weak signals (bureaucratic/templates) — P2 material
+// that matters in repetition, so they surface from their 2nd occurrence.
+// Only JA so far; KO/VI weak lists live in the texthumanize dicts.
+const SERIES_WEAK: Partial<Record<Lang, string[]>> = {
+  ja: [
+    "することが可能", "する必要があります", "と言えるでしょう", "ではないでしょうか",
+    "浮き彫り", "これにより", "幸いです", "以下で解説", "一概には言えません",
+    "ケースバイケース", "掘り下げ", "多角的", "まず最初に", "活用する",
+  ],
 };
 
 // Length floor by script: latin/cyrillic phrases need >=4 chars to be
-// meaningful; hangul/vietnamese-with-marks entries are curated lists —
-// no floor (2-3 syllable hangul blocks are full words).
+// meaningful; hangul/vietnamese-with-marks/kana-kanji entries are
+// curated lists — no floor (2-3 syllable hangul blocks are full words;
+// 3-4 char JA hype adjectives like 革命的 are complete markers).
 function passesLengthFloor(p: string): boolean {
   if (/[\uac00-\ud7af]/.test(p)) return true; // hangul
   if (/[\u1ea0-\u1ef9ăâêôơưđ]/i.test(p)) return true; // vietnamese marks
+  if (/[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9fff]/.test(p)) return true; // kana/kanji (JA)
   return p.length >= 4;
 }
 
@@ -72,7 +97,7 @@ interface Rule {
 
 export class PhraseScanner implements Scanner {
   readonly name = "phrases";
-  readonly langs: Lang[] = ["en", "ru", "ko", "vi"];
+  readonly langs: Lang[] = ["en", "ru", "ko", "vi", "ja"];
 
   async available(): Promise<boolean> {
     try {
@@ -90,7 +115,7 @@ export class PhraseScanner implements Scanner {
     ]
       .filter(passesLengthFloor)
       .map((needle) => ({ needle, kind: "cliche" as const }));
-    for (const needle of new Set([...dicts.bureaucratic_phrases, ...dicts.ai_connectors])) {
+    for (const needle of new Set([...dicts.bureaucratic_phrases, ...dicts.ai_connectors, ...(SERIES_WEAK[lang] ?? [])])) {
       if (passesLengthFloor(needle)) rules.push({ needle, kind: "weak" });
     }
 

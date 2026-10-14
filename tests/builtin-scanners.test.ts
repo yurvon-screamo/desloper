@@ -27,6 +27,21 @@ describe("PhraseScanner", () => {
     const r = await new PhraseScanner().scan(["t.md"], "vi", new Map([["t.md", vi]]));
     expect(r.findings.some((f) => (f.quote ?? "").includes("thời đại số"))).toBe(true);
   });
+  test("JA cliche detected (kana/kanji entries pass the length floor)", async () => {
+    const ja = "本記事では、革命的なツールをご紹介します。";
+    const r = await new PhraseScanner().scan(["t.md"], "ja", new Map([["t.md", ja]]));
+    expect(r.findings.some((f) => (f.quote ?? "").includes("革命的"))).toBe(true);
+    expect(r.findings.some((f) => (f.quote ?? "").includes("本記事では"))).toBe(true);
+  });
+  test("JA weak signals need repetition (single occurrence suppressed)", async () => {
+    const r = await new PhraseScanner().scan(["t.md"], "ja", new Map([["t.md", "導入すること可能です。"]]));
+    expect(r.findings.length).toBe(0);
+  });
+  test("JA weak signals surface from second occurrence", async () => {
+    const ja = "設定することが可能です。変更することが可能です。";
+    const r = await new PhraseScanner().scan(["t.md"], "ja", new Map([["t.md", ja]]));
+    expect(r.findings.some((f) => f.severity === "weak" && (f.quote ?? "").includes("することが可能"))).toBe(true);
+  });
   test("weak signals need repetition (single occurrence suppressed)", async () => {
     // "является" is a bureaucratic phrase (weak): one occurrence -> no finding
     const r = await new PhraseScanner().scan(["t.md"], "ru", new Map([["t.md", "Это является тестом."]]));

@@ -18,7 +18,7 @@ export interface Finding {
   fpReason: string | null;
 }
 
-export type Lang = "en" | "ru" | "ko" | "vi";
+export type Lang = "en" | "ru" | "ko" | "vi" | "ja";
 
 /** Per-scanner run outcome. */
 export interface ToolRun {

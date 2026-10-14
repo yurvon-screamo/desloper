@@ -28,7 +28,7 @@ Usage:
 
 Options:
   --json          machine-readable report (schema v1) to stdout
-  --lang <l>      force language for all files (en|ru|ko|vi)
+  --lang <l>      force language for all files (en|ru|ko|vi|ja)
   --setup         install vendor scanners into vendors/
   --dry-run       with --setup: print planned steps only
   --help          this help
@@ -60,8 +60,8 @@ async function main() {
   const { values, positionals } = parsed;
   if (values.help) usage(0);
   const langOverride = (values.lang as Lang | undefined) ?? null;
-  if (langOverride && !["en", "ru", "ko", "vi"].includes(langOverride)) {
-    console.error(`--lang must be one of en|ru|ko|vi, got "${langOverride}"`);
+  if (langOverride && !["en", "ru", "ko", "vi", "ja"].includes(langOverride)) {
+    console.error(`--lang must be one of en|ru|ko|vi|ja, got "${langOverride}"`);
     process.exit(3);
   }
 

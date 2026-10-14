@@ -14,6 +14,7 @@ export function detectLang(path: string, content: string): Lang {
     if (seg === "ru" || seg === "russian") return "ru";
     if (seg === "ko" || seg === "kor" || seg === "korean") return "ko";
     if (seg === "vi" || seg === "vie" || seg === "vietnamese") return "vi";
+    if (seg === "ja" || seg === "jpn" || seg === "japanese" || seg === "jp") return "ja";
     if (seg === "en" || seg === "eng") return "en";
   }
   const sample = content.slice(0, 4000);
@@ -23,8 +24,14 @@ export function detectLang(path: string, content: string): Lang {
   // (precomposed tone vowels); base letters alone are shared with ro/pt/tr.
   const viMarks = (sample.match(/[\u1ea0-\u1ef9ăâêôơưđĂÂÊÔƠƯĐ]/g) ?? []).length;
   const latin = (sample.match(/[a-z]/gi) ?? []).length;
+  // Kana (hiragana + katakana) occurs in no other supported language, so
+  // even a modest count is decisive. Kanji WITHOUT kana is ambiguous
+  // (Japanese vs Chinese) — deliberately not JA; falls through to "en"
+  // and the report marks the file language_uncertain.
+  const kana = (sample.match(/[\u3040-\u309f\u30a0-\u30ff]/g) ?? []).length;
   if (hangul > 10 && hangul * 3 > cyrillic) return "ko";
   if (cyrillic > 10 && cyrillic > hangul * 3) return "ru";
+  if (kana > 10) return "ja";
   if (viMarks > 8 && viMarks * 5 > latin) return "vi";
   if (viMarks > 20 && latin > viMarks * 3) return "vi"; // vi with much latin/code
   return "en";
@@ -33,10 +40,11 @@ export function detectLang(path: string, content: string): Lang {
 export function isConfident(path: string, content: string): boolean {
   // Path-based detection is always confident.
   const segs = path.toLowerCase().split(/[/\\._-]+/);
-  if (segs.some((s) => s === "ru" || s === "ko" || s === "vi" || s === "en")) return true;
+  if (segs.some((s) => ["ru", "ko", "vi", "en", "ja", "jpn", "japanese", "jp"].includes(s))) return true;
   const sample = content.slice(0, 4000);
   const hangul = (sample.match(/[\uac00-\ud7af]/g) ?? []).length;
   const cyrillic = (sample.match(/[\u0400-\u04ff]/g) ?? []).length;
+  const kana = (sample.match(/[\u3040-\u309f\u30a0-\u30ff]/g) ?? []).length;
   const viMarks = (sample.match(/[ăâêôơưđĂÂÊÔƠƯĐ]/g) ?? []).length;
-  return hangul > 50 || cyrillic > 50 || viMarks > 50;
+  return hangul > 50 || cyrillic > 50 || kana > 50 || viMarks > 50;
 }
