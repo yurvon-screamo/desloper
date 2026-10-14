@@ -22,6 +22,28 @@ per-project via `.desloper.yaml`.
 
 ## Known limitations (by design)
 
+- **ru-structural fragment leads.** Only stubs under 35 chars opening a
+  100+ char body (or standalone stub paragraphs before a substantial
+  one) flag; mid-sized leads (35–100 chars) are a known blind spot.
+  The stub→body adjacency requires exactly one blank line: a double
+  blank between stub and body conservatively breaks the lead relation.
+  One-word run-in labels ("Методика.") and short closing paragraphs
+  stay clean by design. Two-word stubs like "Это важно." before a long
+  body DO flag — suppress per-project if that fits your genre. Reference
+  stubs ("См. следующий раздел.") — the most common lead in RU technical
+  docs — flag too: per-project suppression is expected for docs-genre
+  content.
+- **ru-structural dash density.** Threshold 3 per paragraph flags
+  legitimate RU definition chains ("X — это Y. A — B, C — D") in some
+  genres. The finding quote carries the paragraph excerpt, so per-project
+  `quoteContains` suppression can target specific paragraphs; suppress
+  the whole category only for dash-heavy genres.
+- **ru-structural arrows.** Digit-flanked progressions ("N5 → N1",
+  "30 → 50") are exempt (token-based, so "(N5) → N1" is exempt too).
+  Remaining FP classes: purely numeric/alphanumeric chains ("1 → 2 → 3",
+  "A1 → A2") no longer flag by the same exemption, and punctuation tight
+  to the digit is part of the token (also exempt). Arrows inside list
+  items are not scanned (semi-structural; often progression notation).
 - **Vendor-side suppression is not resurrectable.** Genre calibration
   (humanizer-ru `--genre`, viet-lint taxonomy) runs inside the wrapper;
   desloper suppression can only downgrade further. In a project with an

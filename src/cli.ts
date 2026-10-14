@@ -17,6 +17,7 @@ import { MetricsScanner } from "./scanners/metrics-scanner.ts";
 import { HumanizerRuScanner } from "./scanners/humanizer-ru.ts";
 import { ImNotAiScanner } from "./scanners/im-not-ai.ts";
 import { ViBuiltinScanner } from "./scanners/vi-builtin.ts";
+import { RuStructuralScanner } from "./scanners/ru-structural.ts";
 
 function usage(code = 3): never {
   console.error(`desloper — multilingual AI-slop auditor
@@ -85,6 +86,7 @@ async function main() {
     new HumanizerRuScanner(),
     new ImNotAiScanner(),
     new ViBuiltinScanner(),
+    new RuStructuralScanner(),
   ];
 
   // Group files by language; vendor-independent P0 scan runs on raw content.

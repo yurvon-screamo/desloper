@@ -23,6 +23,14 @@ toolchain). Always re-run the audit after rewriting.
 per file where authentic prose uses ~0. Same replacement table applies; keep
 SEO meta-titles and UI labels (locale parity).
 
+## RU structural (ru-structural)
+
+| Finding | Fix |
+|---|---|
+| `ru:fragment-lead` | Merge the stub into the body sentence, or replace a verbal stub with a nominal label ("Что делал." → "Методика." + body). One-word labels and short closers stay clean |
+| `ru:dash-density` | Same semantic table as the em-dash section: colon after a complete clause, comma for consequence, parentheses for paired asides. Presence of the dash is fine — 3+ per paragraph is connector abuse |
+| `ru:arrow-prose` | Replace with words: "зеркало → определение" → "связь зеркала с определением"; chains "план → аппрув → внесение" → "план проходит аппрув и попадает во внесение". Digit-flanked progressions (N5 → N1) are exempt — see the FP map |
+
 ## Vocabulary (tier1)
 
 EN: landscape→field/space, comprehensive→(drop), serves as→is, unmatched→scoped

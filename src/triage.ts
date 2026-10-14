@@ -29,7 +29,7 @@ const P1_CATEGORIES = new Set([
   "ko:risk_band", "p0-placeholder",
 ]);
 const P1_CATEGORY_PREFIXES = ["ru:", "VI-HUM", "zs:"];
-const P2_CATEGORIES = new Set(["linkedin", "triads", "rhythm", "scaffolding"]);
+const P2_CATEGORIES = new Set(["linkedin", "triads", "rhythm", "scaffolding", "ru:dash-density"]);
 
 /** Upstream corpus calibration: aaw allows up to 6 findings per file. */
 const AAW_GATE = 6;
@@ -53,8 +53,10 @@ export function triage(
     if (f.priority == null) {
       if (P0_PATTERNS.some((re) => re.test(f.quote ?? ""))) withPriority.priority = "P0";
       else if (f.category && P1_CATEGORIES.has(f.category)) withPriority.priority = "P1";
-      else if (f.category && P1_CATEGORY_PREFIXES.some((p) => f.category!.startsWith(p))) withPriority.priority = "P1";
+      // Exact category match beats taxonomy prefixes: "ru:dash-density"
+      // must take the P2 route below, not the generic "ru:" P1 prefix.
       else if (f.category && P2_CATEGORIES.has(f.category)) withPriority.priority = "P2";
+      else if (f.category && P1_CATEGORY_PREFIXES.some((p) => f.category!.startsWith(p))) withPriority.priority = "P1";
       // Sub-high aaw findings are noise-adjacent P2 — unless the file
       // breaks the upstream 6-findings gate, then everything is P1.
       else if (f.tool === "avoid-ai-writing" && !["high", "critical"].includes(f.severity ?? "") && !gateBroken) {

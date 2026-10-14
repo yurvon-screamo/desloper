@@ -14,8 +14,8 @@ documented genre false positive you should leave alone.
 | Priority | Examples |
 |---|---|
 | **P0** (broken) | Unfilled `[your language]` placeholders, Lorem ipsum |
-| **P1** (phrase) | AI cliches ("in today's rapidly evolving…", "важно отметить", "결론적으로"), contrast formulas ("not just X, it's Y" — including the ones dash-to-period rewrites themselves create), tier-1 vocabulary (delve, leverage, seamless, tapestry) |
-| **P2** (structural) | Em-dash overuse, bare-NP bullet lists, uniform sentence rhythm, bold overuse |
+| **P1** (phrase) | AI cliches ("in today's rapidly evolving…", "важно отметить", "결론적으로"), contrast formulas ("not just X, it's Y" — including the ones dash-to-period rewrites themselves create), tier-1 vocabulary (delve, leverage, seamless, tapestry), RU fragment leads ("Что делал." before a long paragraph), arrows in RU prose ("план → аппрув") |
+| **P2** (structural) | Em-dash overuse (RU: density ≥3 per paragraph — presence alone is typographic norm), bare-NP bullet lists, uniform sentence rhythm, bold overuse |
 | **FP** (suppressed) | SEO "Brand — Descriptor" titles, FAQ "Yes." answers, UI button names in bold, numeric ranges (N5–N1), emoji flag switchers — each with a reason string |
 
 ## Quickstart
@@ -61,7 +61,7 @@ none of them — it ships in-process).
 | Language | Built-in (zero setup) | Vendor (after --setup) |
 |---|---|---|
 | EN | phrases · patterns-en (ZeroSlop 139 patterns) · metrics (4-signal lib) · avoid-ai-writing (in-process) | — |
-| RU | phrases (RU cliche dict) | humanizer-ru (genre-calibrated, 64 markers) |
+| RU | phrases (RU cliche dict) · ru-structural (fragment leads, dash density, arrows in prose) | humanizer-ru (genre-calibrated, 64 markers) |
 | KO | phrases (KO cliche dict) | im-not-ai (deterministic KatFish metrics) |
 | VI | phrases + viet-lint (43 VI-HUM patterns) | — |
 
@@ -168,14 +168,14 @@ Zero network dependencies at scan time. Content never leaves the machine.
 ## Development
 
 ```bash
-bun test tests/          # 47 unit tests
+bun test tests/          # 78 unit tests
 bunx tsc --noEmit        # strict typecheck
 bun src/cli.ts tests/fixtures  # e2e on golden fixtures
 bun run build            # compiled binaries → dist/
 ```
 
 CI runs: typecheck + tests + full vendor e2e (exit code, per-scanner
-findings, all 8 scanners asserted) + build matrix with native smoke +
+findings, all 9 scanners asserted) + build matrix with native smoke +
 clean-room artifact e2e (binary provisions its own vendors).
 
 ## License
