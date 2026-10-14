@@ -25,13 +25,15 @@ export function detectLang(path: string, content: string): Lang {
   const viMarks = (sample.match(/[\u1ea0-\u1ef9ăâêôơưđĂÂÊÔƠƯĐ]/g) ?? []).length;
   const latin = (sample.match(/[a-z]/gi) ?? []).length;
   // Kana (hiragana + katakana) occurs in no other supported language, so
-  // even a modest count is decisive. Kanji WITHOUT kana is ambiguous
-  // (Japanese vs Chinese) — deliberately not JA; falls through to "en"
-  // and the report marks the file language_uncertain.
+  // a modest count is decisive — but dominance is guarded like hangul: a
+  // mostly-RU/EN file quoting Japanese (language blog, haiku) must stay
+  // its dominant language. Kanji WITHOUT kana is ambiguous (Japanese vs
+  // Chinese) — deliberately not JA; falls through to "en" and the report
+  // marks the file language_uncertain.
   const kana = (sample.match(/[\u3040-\u309f\u30a0-\u30ff]/g) ?? []).length;
   if (hangul > 10 && hangul * 3 > cyrillic) return "ko";
   if (cyrillic > 10 && cyrillic > hangul * 3) return "ru";
-  if (kana > 10) return "ja";
+  if (kana > 10 && kana * 3 > cyrillic) return "ja";
   if (viMarks > 8 && viMarks * 5 > latin) return "vi";
   if (viMarks > 20 && latin > viMarks * 3) return "vi"; // vi with much latin/code
   return "en";

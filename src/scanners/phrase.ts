@@ -42,6 +42,10 @@ const SERIES_CLICHES: Record<Lang, string[]> = {
     "bên cạnh đó", "đột phá", "vượt trội", "tuyệt vời", "khai mở tiềm năng",
   ],
   ja: [
+    // いかがでしたでしょうか is not a typo-merge of the vendor's split
+    // variants: it is the double-keigo closer from the public JA AI-slop
+    // catalogs (aismell stem いかがでし covers いかがでしたか /
+    // いかがでしょうか / いかがでしたでしょうか alike).
     "革命的", "画期的", "圧倒的に", "劇的に", "完全ガイド", "ゲームチェンジャー",
     "パラダイムシフト", "世界初", "次世代の", "魔法のように", "奇跡的な",
     "業界を再定義", "未来を変える", "と言っても過言ではない", "に他ならない",

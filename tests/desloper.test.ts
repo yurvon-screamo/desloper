@@ -41,6 +41,12 @@ describe("detectLang", () => {
   test("by script: japanese kana text", () => {
     expect(detectLang("x.md", "これは日本語のテキストです。ひらがなとカタカナが含まれています。")).toBe("ja");
   });
+  test("mostly-russian file quoting japanese stays ru (kana dominance guard)", () => {
+    const ru = "Японский язык использует три системы письма: ひらがな、カタカナ、漢字。" +
+      "Это русское предложение про изучение языков. Здесь много кириллицы вокруг цитаты. " +
+      "И ещё одно русское предложение для доминирования кириллицы в образце.";
+    expect(detectLang("x.md", ru)).toBe("ru");
+  });
   test("kanji without kana is NOT ja (zh ambiguity) — falls to en", () => {
     expect(detectLang("x.md", "这是一个测试文档。我们在这里讨论技术问题。")).toBe("en");
   });

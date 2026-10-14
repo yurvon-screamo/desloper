@@ -52,7 +52,10 @@ export class NaturalJapaneseScanner implements Scanner {
         return failedRun(this.name, files.length, `missing findings[] on ${file}`);
       }
       for (const vf of parsed.findings) {
-        if (typeof vf.category !== "string" || typeof vf.excerpt !== "string") continue;
+        if (typeof vf.category !== "string" || typeof vf.excerpt !== "string") {
+          process.stderr.write(`warn: natural-japanese: malformed finding skipped on ${file}\n`);
+          continue;
+        }
         findings.push({
           tool: this.name,
           lang,

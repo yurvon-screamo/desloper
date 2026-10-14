@@ -35,7 +35,7 @@ describe("PhraseScanner", () => {
     expect(r.findings.some((f) => (f.quote ?? "").includes("本記事では"))).toBe(true);
   });
   test("JA weak signals need repetition (single occurrence suppressed)", async () => {
-    const r = await new PhraseScanner().scan(["t.md"], "ja", new Map([["t.md", "導入すること可能です。"]]));
+    const r = await new PhraseScanner().scan(["t.md"], "ja", new Map([["t.md", "導入することが可能です。"]]));
     expect(r.findings.length).toBe(0);
   });
   test("JA weak signals surface from second occurrence", async () => {
@@ -105,6 +105,14 @@ describe("ViBuiltinScanner", () => {
 });
 
 describe("JaBuiltinScanner", () => {
+  test("ja golden fixture meets vendor statistical thresholds (chars, not bytes)", async () => {
+    // The vendor's corpus-calibrated detectors are gated on document
+    // length (nominal_ending ≥1500 essay chars, TTR/MTLD ≥4000). A short
+    // fixture would hold the CI contract by lexicon only — the rhythm
+    // line would regress to zero findings without failing CI.
+    const text = await Bun.file("tests/fixtures/ja/sample-slop.md").text();
+    expect(text.length).toBeGreaterThanOrEqual(2500);
+  });
   test("JA-AI-L01 emoji in list item detected with line number", async () => {
     const text = "序文です。\n- ✅ 高速な処理を実現します\n";
     const r = await new JaBuiltinScanner().scan(["t.md"], "ja", new Map([["t.md", text]]));

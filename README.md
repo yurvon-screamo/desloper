@@ -172,7 +172,7 @@ Zero network dependencies at scan time. Content never leaves the machine.
 ## Development
 
 ```bash
-bun test tests/          # 99 unit tests
+bun test tests/          # 101 unit tests
 bunx tsc --noEmit        # strict typecheck
 bun src/cli.ts tests/fixtures  # e2e on golden fixtures
 bun run build            # compiled binaries → dist/

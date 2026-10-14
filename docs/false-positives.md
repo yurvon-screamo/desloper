@@ -73,6 +73,12 @@ per-project via `.desloper.yaml`.
   trap so far. The P0 placeholder scanner also stays EN-convention
   ([your …], INSERT, Lorem ipsum): JA templates use the same conventions,
   and 【ここに…】 patterns would false-positive on legitimate JA docs.
+- **JA lexicon overlaps across scanners, by design.** Markers like
+  することが可能 or に他ならない exist both in the phrases dictionaries
+  and in the natural-japanese vendor's translationese/forbidden lists —
+  the same text can yield two findings with different priorities (RU
+  lives with the same overlap). Findings are not deduped across tools;
+  the report shows each tool's evidence separately.
 - **JA vendor lint exits 0 by design.** natural-japanese `lint.py` is a
   lint, not a gate: it exits 0 regardless of finding count (1 only on
   input errors). desloper therefore treats a nonzero exit OR unparseable
