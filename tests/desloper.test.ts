@@ -41,7 +41,7 @@ describe("detectLang", () => {
   test("by script: japanese kana text", () => {
     expect(detectLang("x.md", "これは日本語のテキストです。ひらがなとカタカナが含まれています。")).toBe("ja");
   });
-  test("mostly-russian file quoting japanese stays ru (kana dominance guard)", () => {
+  test("cyrillic-dominant file with kana quotes stays ru (check ordering)", () => {
     const ru = "Японский язык использует три системы письма: ひらがな、カタカナ、漢字。" +
       "Это русское предложение про изучение языков. Здесь много кириллицы вокруг цитаты. " +
       "И ещё одно русское предложение для доминирования кириллицы в образце.";
