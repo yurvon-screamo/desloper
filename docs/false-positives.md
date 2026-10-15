@@ -131,3 +131,32 @@ per-project via `.desloper.yaml`.
   - **P0 placeholders include ES conventions** ("[insertar …]"), unlike
     JA (【】 skipped as FP-prone). A human ES doc quoting a bracket
     template in prose will flag P0 — same tradeoff as the EN rule.
+- **TH/MY/ID false-positive maps are provisional.** None of the three
+  catalogs comes from a real content corpus (public AI-writing guides
+  for TH/ID; a minimal seed for MY — see config/dictionaries/README.md).
+  Known FP classes and boundaries:
+  - **TH/MY line-lead connectors have no trailing boundary.** Thai and
+    Burmese orthographies are unspaced: "นอกจากนี้ยัง…" glues the marker
+    to what follows, so line-start position is the whole signal (P2).
+    Human essays open paragraphs with นอกจากนี้ / ထို့အပြင် routinely —
+    expected noise, suppress per-project for such genres.
+  - **MY coverage is a seed.** Two SERIES cliches and three rules; do
+    not treat a clean MY scan as evidence of human writing.
+  - **ID vs Malay is not distinguished.** Malay is not a supported
+    bucket and shares nearly all ID stopwords — MS text lands in the
+    id bucket and is audited by ID rules (some of which are calques
+    shared with MS AI output anyway).
+  - **ID stopwords vs EN proper nouns.** "Dan", "Yang", "Ada" match the
+    stopword list case-insensitively; a profile article concentrating
+    one such name can outweigh the EN guard — mitigate with --lang en.
+  - **TH SARA AM (U+0E33) normalization.** The phrases scanner AND the
+    th-patterns regex catalog match substrings on NFC text; NFD-normalized
+    TH documents decompose ำ into ํ+า and can silently miss both dictionary
+    markers and catalog rules.
+  - **Path segments "id" and "my" are deliberately NOT aliases.** As
+    kebab-case segments they are near-always identifiers/possessives
+    (user-id.md, my-notes.md) and a path hit is short-circuit
+    "confident" — silently skipping EN scanners. Use ind/ bahasa/ for
+    Indonesian and bur/ mya/ myanmar/ burmese/ for Burmese trees; a
+    plain content/id/ directory still detects by stopwords (with an
+    uncertainty marker below 50).

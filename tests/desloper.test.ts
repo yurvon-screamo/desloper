@@ -44,6 +44,70 @@ describe("detectLang", () => {
     expect(detectLang("spanish/guia.md", "")).toBe("es");
     expect(detectLang("espanol/nota.md", "")).toBe("es");
   });
+  test("by path segment th (tha/thai aliases)", () => {
+    expect(detectLang("content/th/post.md", "")).toBe("th");
+    expect(detectLang("blog/tha/entry.md", "")).toBe("th");
+    expect(detectLang("thai/guide.md", "")).toBe("th");
+  });
+  test("by path segment my (bur/mya/myanmar/burmese aliases; 'my' excluded)", () => {
+    expect(detectLang("content/bur/post.md", "")).toBe("my");
+    expect(detectLang("blog/mya/entry.md", "")).toBe("my");
+    expect(detectLang("myanmar/guide.md", "")).toBe("my");
+    expect(detectLang("burmese/note.md", "")).toBe("my");
+    // "my" as a segment is a possessive slug (my-notes.md), not Burmese:
+    // must fall through to content detection (here: en).
+    expect(detectLang("my-notes.md", "A note about my setup and my tools.")).toBe("en");
+  });
+  test("'id' is NOT a path alias (identifier collision)", () => {
+    expect(detectLang("user-id.md", "The user identifier is stable.")).toBe("en");
+    expect(detectLang("order-id.md", "Orders keep a numeric id.")).toBe("en");
+    expect(detectLang("content/ind/post.md", "")).toBe("id");
+    expect(detectLang("bahasa/panduan.md", "")).toBe("id");
+    expect(detectLang("indonesian/guide.md", "")).toBe("id");
+  });
+  test("by script: thai text", () => {
+    expect(detectLang("x.md", "การเขียนโปรแกรมเป็นทักษะที่ต้องฝึกฝนอย่างต่อเนื่องและมีความอดทน")).toBe("th");
+  });
+  test("by script: myanmar text", () => {
+    expect(detectLang("x.md", "ကွန်ပျူတာပရိုဂရမ်ရေးသည် ဆက်တိုက်လေ့လာရသော အလုပ်ဖြစ်သည်")).toBe("my");
+  });
+  test("by content: indonesian stopword dominance", () => {
+    const id = "Pengembangan perangkat lunak adalah praktik yang terus berkembang. " +
+      "Tim yang menggunakan metodologi tanggap dapat mengirimkan nilai dengan cara " +
+      "berkelanjutan, karena iterasi yang pendek memungkinkan untuk mengoreksi arah. " +
+      "Ketika sebuah organisasi memutuskan untuk mengadopsi praktik ini, hal yang " +
+      "paling penting adalah budaya. Tanpa budaya, alat tidak mengubah apa pun. " +
+      "Keseimbangan antara orang dan proses inilah yang menopang proyek dalam jangka " +
+      "panjang, bahkan ketika kode menua dan prioritas berubah sepenuhnya. Dokumentasi " +
+      "adalah bagian lain yang sering diabaikan. Tim yang menulis apa yang mereka " +
+      "kerjakan, dan juga alasannya, menekan biaya orientasi orang baru, karena " +
+      "pengetahuan tidak hanya hidup di kepala anggota lama. Pengujian otomatis " +
+      "memainkan peran serupa. Di antara keduanya, tim mendapatkan kepercayaan untuk " +
+      "berubah, dan itu yang benar-benar penting saat bisnis meminta putaran arah. " +
+      "Tentang alat: perlu diingat bahwa tidak ada alat yang menulis kode untuk kita. " +
+      "Alat yang paling baik adalah alat yang menyatu dengan alur kerja yang sudah ada, " +
+      "karena setiap alat baru yang menuntut ritual sendiri pada akhirnya ditinggalkan. " +
+      "Keputusan kecil yang konsisten, dibuat oleh orang yang memahami konteks, adalah " +
+      "yang menopang sistem selama bertahun-tahun. Untuk itu, tim perlu menjaga ritme, " +
+      "dan juga menjaga fokus pada masalah yang ingin dipecahkan bersama penggunanya.";
+    expect(detectLang("x.md", id)).toBe("id");
+    expect(isConfident("x.md", id)).toBe(true);
+  });
+  test("vietnamese text stays vi (ID branch sits after vi)", () => {
+    const vi = "Ngày nay, việc di chuyển giữa các thành phố trở nên dễ dàng hơn. " +
+      "Chúng ta có thể đi máy bay, tàu hỏa hoặc xe khách. Tuy nhiên, mỗi phương thức " +
+      "đều có ưu điểm và nhược điểm riêng. Khi di chuyển xa, chi phí là yếu tố quan trọng. " +
+      "Nhiều người chọn xe khách vì giá rẻ. Một số khác thích máy bay vì tiết kiệm thời gian.";
+    expect(detectLang("x.md", vi)).toBe("vi");
+  });
+  test("EN text stays en against ID stopwords (Dan/Yang/Ada homographs)", () => {
+    const en = "Dan met Yang at the conference. Ada presented her work on distributed " +
+      "systems and the tools that the team is building for scale. That talk was the " +
+      "best of the day, and it drew a large crowd. For many attendees it was the first " +
+      "time they saw the new pipeline in action. The room stayed full until the end, " +
+      "and the questions kept coming. It is rare to see that level of engagement.";
+    expect(detectLang("x.md", en)).toBe("en");
+  });
   test("by content: spanish stopword dominance", () => {
     const es = "El desarrollo de software es una disciplina que combina técnica y creatividad. " +
       "Los equipos que trabajan con metodologías ágiles entregan valor de forma continua, " +
@@ -99,6 +163,15 @@ describe("detectLang", () => {
 describe("isConfident (es)", () => {
   test("path aliases are always confident", () => {
     for (const p of ["content/es/a.md", "blog/spa/b.md", "spanish/c.md", "espanol/d.md"]) {
+      expect(isConfident(p, "")).toBe(true);
+    }
+  });
+  test("th/my/id path aliases are always confident (list sync with detectLang)", () => {
+    for (const p of [
+      "content/th/a.md", "blog/tha/b.md", "thai/c.md",
+      "bur/d.md", "mya/e.md", "myanmar/f.md", "burmese/g.md",
+      "ind/h.md", "indonesian/i.md", "bahasa/j.md", "indo/k.md",
+    ]) {
       expect(isConfident(p, "")).toBe(true);
     }
   });
@@ -200,9 +273,27 @@ describe("triage", () => {
     const out = triage([{ ...base, category: "es:em_dash_inciso", quote: " — así — " }], []);
     expect(out[0].priority).toBe("P2");
   });
-  test("unknown es: category defaults to visible P1", () => {
+  test("es:some_future_detector is P1", () => {
     const out = triage([{ ...base, category: "es:some_future_detector" }], []);
     expect(out[0].priority).toBe("P1");
+  });
+  test("th/my/id pomposity and announcer categories are P1", () => {
+    for (const cat of ["th:pomposity_frame", "th:conclusion_announcer", "my:pomposity_frame", "my:conclusion_announcer", "id:pomposity_frame", "id:conclusion_announcer"]) {
+      const out = triage([{ ...base, category: cat, quote: "x" }], []);
+      expect(out[0].priority).toBe("P1");
+    }
+  });
+  test("th/my/id paragraph connectors are P2", () => {
+    for (const cat of ["th:paragraph_connector", "my:paragraph_connector", "id:paragraph_connector"]) {
+      const out = triage([{ ...base, category: cat, quote: "x" }], []);
+      expect(out[0].priority).toBe("P2");
+    }
+  });
+  test("unknown th:/my:/id: categories default to visible P1", () => {
+    for (const cat of ["th:future", "my:future", "id:future"]) {
+      const out = triage([{ ...base, category: cat, quote: "x" }], []);
+      expect(out[0].priority).toBe("P1");
+    }
   });
   test("ja:low_burstiness is P2 by category despite warn severity", () => {
     const out = triage([{ ...base, category: "ja:low_burstiness", severity: "warn" }], []);

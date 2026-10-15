@@ -7,7 +7,18 @@
 | ja-patterns.json | textlint-ja/textlint-rule-preset-ai-writing src/rules @ 45bb648 | MIT | 4 of 5 rules absorbed as data (emoji/bold-list formatting, emphasis patterns, hype expressions). NOT absorbed: no-ai-colon-continuation (kuromojin parser dependency; translationese lane is covered by the natural-japanese vendor) and ai-tech-writing-guideline (subjective advice, FP-prone on human text). Hype entries already covered by the phrases scanner (SERIES_CLICHES.ja: 革命的, ゲームチェンジャー, 世界初, 魔法のように, 奇跡的な, 業界を再定義, 未来を変える, パラダイムシフト, 次世代の) are not duplicated in the catalog. Corpus-informed exclusions from SERIES_CLICHES.ja: 最後に/まさに are human-frequency words (coji/natural-japanese calibration: 63% of that corpus's false positives). |
 | zero-slop-patterns.json | manavmishra/ZeroSlop data/patterns.json @ 2.12.1 | MIT | 139/273 patterns (contrast/scaffolding/hedging/marketing/puffery/drama/linkedin/filler/verbs) + 95-word lexicon; filtered to production-validated categories |
 | es-patterns.json | dorelysm/naturalizacion-texto-es SUBSTITUTIONS.md @ 7eaba75 | MIT | Tiers 1/3/4 converted to regex rules (pomposity frames, conclusion announcers, paragraph connectors); Tier 2 vocabulary lives in phrase.ts SERIES_WEAK.es (weak class — ordinary words, FP-safe only in repetition); "fundamental" excluded from Tier 2 (dedup: the frame "Es fundamental que" carries it in es:pomposity_frame). No corpus calibration — thresholds provisional, see docs/false-positives.md. |
+| th-patterns.json | curated from public TH AI-writing guides (no upstream catalog exists) | n/a (linguistic facts) | Pomposity frames / conclusion announcers / paragraph connectors. NO \b allowed (ASCII \b never matches Thai letters); line-lead rules carry no trailing boundary (unspaced orthography). Provisional. |
+| my-patterns.json | minimal seed (no deterministic MY catalog found in 2026-10 research) | n/a (linguistic facts) | Heavily provisional: 3 rules, 2 SERIES cliches, empty SERIES_WEAK. Script detection (U+1000–U+109F) is deterministic; the catalog is a seed awaiting real-corpus curation. Same no-\b / no-trailing-boundary rules as TH. |
+| id-patterns.json | curated from public ID AI-writing guides (tip lists naming "di era digital", "tak dapat dipungkiri", stiff transitions) | n/a (linguistic facts) | Pomposity frames / conclusion announcers (^ + sentence-start) / paragraph connectors. "pada akhirnya" deliberately lives in SERIES_WEAK.id (repetition class). Malay is not a supported bucket and is near-indistinguishable — MS text lands in the id bucket (documented). Provisional. |
 | (vendored lib) | Aboudjem/humanizer-skill cli/lib @ a58df06 | MIT | src/scanners/{metrics,vocabulary,tokenize}.js — dependency-free, unmodified |
 
 Dead/dormant upstreams are absorbed as data so desloper carries no runtime
 dependency on them. If an upstream revives, re-extract and refresh here.
+
+Catalog-scanner contract (CatalogScanner in src/scanners/catalog.ts, pinned
+here because three independent loaders of the zero-slop format exist):
+severity = w >= 4 ? "high" : "medium"; category = the rule's `cat` verbatim
+(language-prefixed); quote = match.trim().slice(0, 200); line = computed from
+match index; zero-width guard on the exec loop. Unspaced-orthography
+catalogs (th/my) must not use \b — a rule that does is silently dead, and
+the rule-level fixture test is the only guard that catches it.

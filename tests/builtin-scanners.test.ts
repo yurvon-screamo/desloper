@@ -4,6 +4,7 @@ import { ViBuiltinScanner, compilePyRegex } from "../src/scanners/vi-builtin.ts"
 import { JaBuiltinScanner } from "../src/scanners/ja-builtin.ts";
 import { EsBuiltinScanner } from "../src/scanners/es-builtin.ts";
 import { MetricsScanner } from "../src/scanners/metrics-scanner.ts";
+import { type ConfigAsset, configPath } from "../src/paths.ts";
 
 const en = "We're thrilled to announce cutting-edge tech. In conclusion, only time will tell.";
 const ru = "В современном мире важно отметить, что это открывает новые горизонты. В заключение отметим.";
@@ -282,6 +283,88 @@ describe("EsBuiltinScanner", () => {
     for (const p of raw.patterns) {
       expect(compilePyRegex(p.rx)).not.toBeNull();
     }
+  });
+});
+
+describe("CatalogScanner (th/my/id)", () => {
+  const configs = [
+    { name: "th-lint", lang: "th" as const, asset: "dictionaries/th-patterns.json" as ConfigAsset, fixture: "tests/fixtures/th/sample-slop.md" },
+    { name: "my-lint", lang: "my" as const, asset: "dictionaries/my-patterns.json" as ConfigAsset, fixture: "tests/fixtures/my/sample-slop.md" },
+    { name: "id-lint", lang: "id" as const, asset: "dictionaries/id-patterns.json" as ConfigAsset, fixture: "tests/fixtures/ind/sample-slop.md" },
+  ];
+
+  test("every rule of every catalog compiles AND matches its fixture (rule-level coverage)", async () => {
+    const { CatalogScanner } = await import("../src/scanners/catalog.ts");
+    for (const cfg of configs) {
+      const raw = JSON.parse(await Bun.file(configPath(cfg.asset)).text()) as {
+        patterns: { name: string; cat: string; rx: string }[];
+      };
+      expect(raw.patterns.length).toBeGreaterThan(0);
+      const fixture = await Bun.file(cfg.fixture).text();
+      // Rule-level, not category-level: rules may share a category
+      // (id conclusion_announcer ^ vs _mid), so a semantically dead rule
+      // must fail HERE, not hide behind a sibling of the same cat.
+      for (const p of raw.patterns) {
+        const re = compilePyRegex(p.rx);
+        expect(re).not.toBeNull();
+        expect([...fixture.matchAll(re as RegExp)].length).toBeGreaterThan(0);
+      }
+      const scanner = new CatalogScanner({ name: cfg.name, langs: [cfg.lang], asset: cfg.asset });
+      const r = await scanner.scan(["t.md"], cfg.lang, new Map([["t.md", fixture]]));
+      expect(r.findings.length).toBeGreaterThan(0);
+    }
+  });
+
+  test("th-lint: pomposity detected with line number; connector at line start only", async () => {
+    const { CatalogScanner } = await import("../src/scanners/catalog.ts");
+    const s = new CatalogScanner({ name: "th-lint", langs: ["th"], asset: "dictionaries/th-patterns.json" });
+    const text = "ประโยคแรก\nเป็นที่ทราบกันดีว่าเทคโนโลยีเปลี่ยนโลก\nประโยคที่มี นอกจากนี้ อยู่กลางบรรทัด\nนอกจากนี้ยังมีเรื่องอื่นอีก\n";
+    const r = await s.scan(["t.md"], "th", new Map([["t.md", text]]));
+    const pomp = r.findings.filter((f) => f.category === "th:pomposity_frame");
+    expect(pomp.length).toBe(1);
+    expect(pomp[0].line).toBe(2);
+    const conn = r.findings.filter((f) => f.category === "th:paragraph_connector");
+    expect(conn.length).toBe(1); // line-start only; unspaced gluing still matches
+    expect(conn[0].line).toBe(4);
+  });
+
+  test("id-lint: mid-sentence announcer after a period fires on the announcer's line exactly once", async () => {
+    const { CatalogScanner } = await import("../src/scanners/catalog.ts");
+    const idS = new CatalogScanner({ name: "id-lint", langs: ["id"], asset: "dictionaries/id-patterns.json" });
+    // Same-line sentence boundary: exercises the _mid rule specifically
+    // (the ^ rule cannot match — the announcer is not at line start).
+    const text = "Semua langkah selesai. Kesimpulannya, hasilnya memuaskan.\n";
+    const r = await idS.scan(["t.md"], "id", new Map([["t.md", text]]));
+    const ann = r.findings.filter((f) => f.category === "id:conclusion_announcer");
+    expect(ann.length).toBe(1);
+    expect(ann[0].line).toBe(1);
+  });
+
+  test("plain human prose produces no findings in each catalog language", async () => {
+    const { CatalogScanner } = await import("../src/scanners/catalog.ts");
+    const cases = [
+      { cfg: configs[0], text: "เมื่อวานฉันไปตลาดสดใกล้บ้านแล้วซื้อผลไม้มาไม่กี่ชิ้น รสชาติหวานดี" },
+      { cfg: configs[1], text: "မနေ့က အိမ်နဲ့နီးတဲ့ စျေးသို့သွားပြီး သစ်သီးဝလံအနည်းငယ် ဝယ်ခဲ့သည်" },
+      { cfg: configs[2], text: "Kemarin saya pergi ke pasar dekat rumah dan membeli buah. Rasanya manis sekali." },
+    ];
+    for (const { cfg, text } of cases) {
+      const s = new CatalogScanner({ name: cfg.name, langs: [cfg.lang], asset: cfg.asset });
+      const r = await s.scan(["t.md"], cfg.lang, new Map([["t.md", text]]));
+      expect(r.findings.length).toBe(0);
+    }
+  });
+
+  test("phrases: TH cliche and weak repetition, ID cliche and weak repetition", async () => {
+    const th = await new PhraseScanner().scan(["t.md"], "th", new Map([["t.md", "เทคโนโลยีนี้เปลี่ยนโลกไปแล้ว"]]));
+    expect(th.findings.some((f) => (f.quote ?? "").includes("เปลี่ยนโลก"))).toBe(true);
+    const thWeakOnce = await new PhraseScanner().scan(["t.md"], "th", new Map([["t.md", "โครงการนี้ช่วยยกระดับทีม"]]));
+    expect(thWeakOnce.findings.length).toBe(0);
+    const thWeakTwice = await new PhraseScanner().scan(["t.md"], "th", new Map([["t.md", "ช่วยยกระดับทีม และยกระดับองค์กร"]]));
+    expect(thWeakTwice.findings.some((f) => f.severity === "weak" && (f.quote ?? "").includes("ยกระดับ"))).toBe(true);
+    const id = await new PhraseScanner().scan(["t.md"], "id", new Map([["t.md", "Produk ini memainkan peran penting bagi tim kecil."]]));
+    expect(id.findings.some((f) => (f.quote ?? "").includes("memainkan peran penting"))).toBe(true);
+    const idWeakTwice = await new PhraseScanner().scan(["t.md"], "id", new Map([["t.md", "Kami memfasilitasi diskusi. Kami juga memfasilitasi evaluasi."]]));
+    expect(idWeakTwice.findings.some((f) => f.severity === "weak" && (f.quote ?? "").includes("memfasilitasi"))).toBe(true);
   });
 });
 

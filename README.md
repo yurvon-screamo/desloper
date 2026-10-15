@@ -1,7 +1,8 @@
 # desloper
 
 Multilingual **AI-slop auditor** for content teams: scans markdown in English,
-Russian, Korean, Vietnamese, Japanese, and Spanish; triages findings into fixable priorities vs
+Russian, Korean, Vietnamese, Japanese, Spanish, Thai, Burmese, and Indonesian;
+triages findings into fixable priorities vs
 documented false positives; exits CI-safe.
 
 Built from a production deslop series (5 PR cycles on a real landing page,
@@ -68,10 +69,15 @@ none of them — it ships in-process).
 | VI | phrases + viet-lint (43 VI-HUM patterns) | — |
 | JA | phrases (JA cliche dict) + ja-lint (JA-AI patterns from textlint-ja preset) | natural-japanese (corpus-calibrated: rhythm burstiness, paragraph uniformity, translationese — 137 human / 406 AI texts) |
 | ES | phrases (ES cliche dict) + es-lint (pomposity frames, conclusion announcers, paragraph connectors, triads, -mente chains, poder+infinitivo, em-dash inciso) | — |
+| TH | phrases (TH cliche dict) + th-lint (pomposity frames, conclusion announcers, paragraph connectors) | — |
+| MY | phrases (minimal seed) + my-lint (seed catalog) | — |
+| ID | phrases (ID cliche dict) + id-lint (pomposity frames, conclusion announcers, paragraph connectors) | — |
 
-The built-in `phrases` scanner works across all six languages using AI
+The built-in `phrases` scanner works across all nine languages using AI
 cliche/bureaucratic dictionaries extracted from texthumanize + lists
-distilled during the production series.
+distilled during the production series. TH/MY/ID catalogs are curated from
+public AI-writing guides (no upstream catalogs exist — MY is a minimal
+seed); their FP maps are provisional, see docs/false-positives.md.
 
 ## Per-project false positives
 
@@ -169,7 +175,8 @@ texthumanize (system CLI), humanizer-skill (dormant), vietnamese-humanizer
 (dormant), ZeroSlop (npx → built-in `patterns-en`), textlint-ja preset
 (built-in `ja-lint`), naturalizacion-texto-es (built-in `es-lint` — the
 upstream is an LLM skill with no deterministic script, so only its
-SUBSTITUTIONS catalog was absorbable).
+SUBSTITUTIONS catalog was absorbable). The TH/MY/ID catalogs are curated
+from public AI-writing guides — no upstream repos existed to absorb.
 
 Zero network dependencies at scan time. Content never leaves the machine.
 

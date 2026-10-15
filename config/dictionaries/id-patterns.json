@@ -1,0 +1,29 @@
+{
+  "_attribution": "Curated from public Indonesian AI-writing guides (buildwithangga-class tip lists name 'di era digital yang serba cepat', 'tak dapat dipungkiri', stiff transitions directly); no upstream catalog exists — see config/dictionaries/README.md. Same format as zero-slop-patterns.json; Latin script so \\b is safe. 'pada akhirnya' lives in SERIES_WEAK.id (repetition class), NOT here.",
+  "patterns": [
+    {
+      "name": "pomposity_frame",
+      "cat": "id:pomposity_frame",
+      "rx": "(?i)\\b(?:penting untuk (?:dicatat|diingat)|perlu (?:diperhatikan|diakui|dicatat) bahwa|tidak dapat dipungkiri bahwa)\\b",
+      "w": 5
+    },
+    {
+      "name": "conclusion_announcer",
+      "cat": "id:conclusion_announcer",
+      "rx": "(?mi)^[\\t ]*(?:[-*+])?[\\t ]*(?:kesimpulannya|dapat disimpulkan bahwa|secara keseluruhan|ringkasnya)\\b",
+      "w": 5
+    },
+    {
+      "name": "paragraph_connector",
+      "cat": "id:paragraph_connector",
+      "rx": "(?mi)^[\\t ]*(?:[-*+])?[\\t ]*(?:selain itu|di sisi lain|oleh karena itu|sebagai tambahan|lebih lanjut|namun demikian|dengan demikian),",
+      "w": 3
+    },
+    {
+      "name": "conclusion_announcer_mid",
+      "cat": "id:conclusion_announcer",
+      "rx": "(?i)(?<=[.;:])[ \\t]+(?:kesimpulannya|dapat disimpulkan bahwa|secara keseluruhan|ringkasnya)\\b",
+      "w": 4
+    }
+  ]
+}

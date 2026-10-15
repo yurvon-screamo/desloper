@@ -22,6 +22,7 @@ import { ViBuiltinScanner } from "./scanners/vi-builtin.ts";
 import { JaBuiltinScanner } from "./scanners/ja-builtin.ts";
 import { RuStructuralScanner } from "./scanners/ru-structural.ts";
 import { EsBuiltinScanner } from "./scanners/es-builtin.ts";
+import { CatalogScanner } from "./scanners/catalog.ts";
 
 function usage(code = 3): never {
   console.error(`desloper — multilingual AI-slop auditor
@@ -94,6 +95,9 @@ async function main() {
     new JaBuiltinScanner(),
     new RuStructuralScanner(),
     new EsBuiltinScanner(),
+    new CatalogScanner({ name: "th-lint", langs: ["th"], asset: "dictionaries/th-patterns.json" }),
+    new CatalogScanner({ name: "my-lint", langs: ["my"], asset: "dictionaries/my-patterns.json" }),
+    new CatalogScanner({ name: "id-lint", langs: ["id"], asset: "dictionaries/id-patterns.json" }),
   ];
 
   // Group files by language; vendor-independent P0 scan runs on raw content.

@@ -1,0 +1,23 @@
+{
+  "_attribution": "Curated from public Thai AI-writing guides (academic-humanizing tutorials citing เป็นที่ทราบกันดีว่า-class patterns); no upstream catalog exists — see config/dictionaries/README.md. Format mirrors zero-slop-patterns.json: patterns[{name, cat, rx (Python-style flags), w (severity weight, >=4 -> high)}]. NO \\b allowed: ASCII \\b never matches Thai letters (non-word in JS) — a rule using it would be silently dead. Thai orthography is unspaced: line-lead rules deliberately carry NO trailing boundary (words glue to what follows).",
+  "patterns": [
+    {
+      "name": "pomposity_frame",
+      "cat": "th:pomposity_frame",
+      "rx": "เป็นที่ทราบกันดีว่า|เป็นที่น่าสังเกตว่า|สิ่งสำคัญคือ|ไม่ต้องสงสัยเลยว่า",
+      "w": 5
+    },
+    {
+      "name": "conclusion_announcer",
+      "cat": "th:conclusion_announcer",
+      "rx": "(?m)^[\\t ]*(?:[-*+])?[\\t ]*(?:โดยสรุป|สรุปได้ว่า|โดยรวมแล้ว|กล่าวโดยสรุปว่า)",
+      "w": 5
+    },
+    {
+      "name": "paragraph_connector",
+      "cat": "th:paragraph_connector",
+      "rx": "(?m)^[\\t ]*(?:[-*+])?[\\t ]*(?:นอกจากนี้|อีกทั้ง|ดังนั้น|ในขณะเดียวกัน|ในอีกด้านหนึ่ง|อย่างไรก็ตาม)",
+      "w": 3
+    }
+  ]
+}

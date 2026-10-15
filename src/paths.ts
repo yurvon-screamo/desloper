@@ -7,6 +7,9 @@ import texthumanizeDicts from "../config/dictionaries/texthumanize-dicts.json" w
 import viPatterns from "../config/dictionaries/vi-patterns.json" with { type: "file" };
 import jaPatterns from "../config/dictionaries/ja-patterns.json" with { type: "file" };
 import esPatterns from "../config/dictionaries/es-patterns.json" with { type: "file" };
+import thPatterns from "../config/dictionaries/th-patterns.json" with { type: "file" };
+import myPatterns from "../config/dictionaries/my-patterns.json" with { type: "file" };
+import idPatterns from "../config/dictionaries/id-patterns.json" with { type: "file" };
 import setupVendorsScript from "../setup-vendors.sh" with { type: "file" };
 
 /**
@@ -31,6 +34,9 @@ const CONFIG_ASSETS = {
   "dictionaries/vi-patterns.json": viPatterns,
   "dictionaries/ja-patterns.json": jaPatterns,
   "dictionaries/es-patterns.json": esPatterns,
+  "dictionaries/th-patterns.json": thPatterns,
+  "dictionaries/my-patterns.json": myPatterns,
+  "dictionaries/id-patterns.json": idPatterns,
 } as const;
 
 export type ConfigAsset = keyof typeof CONFIG_ASSETS;

@@ -34,6 +34,11 @@ const P1_CATEGORIES = new Set([
   // es-lint phrase-level tells (catalog absorbed as data); every other
   // es: category is structural and lives in P2_CATEGORIES below.
   "es:pomposity_frame", "es:conclusion_announcer",
+  // th/my/id-lint phrase-level tells (curated catalogs); their only
+  // other category (paragraph_connector) lives in P2_CATEGORIES.
+  "th:pomposity_frame", "th:conclusion_announcer",
+  "my:pomposity_frame", "my:conclusion_announcer",
+  "id:pomposity_frame", "id:conclusion_announcer",
 ]);
 const P1_CATEGORY_PREFIXES = ["ru:", "VI-HUM", "zs:"];
 const P2_CATEGORIES = new Set([
@@ -59,6 +64,10 @@ const P2_CATEGORIES = new Set([
   // here — vendor/catalog updates default to visible P1, never silent P2.
   "es:paragraph_connector", "es:triads", "es:mente_adverb_chain",
   "es:poder_infinitivo", "es:em_dash_inciso",
+  // th/my/id-lint paragraph connectors (line-lead tells; unspaced
+  // orthographies for TH/MY make them repetition-flavored, hence P2 —
+  // same bucket as ja:paragraph_lead_conjunction).
+  "th:paragraph_connector", "my:paragraph_connector", "id:paragraph_connector",
 ]);
 
 /** Upstream corpus calibration: aaw allows up to 6 findings per file. */

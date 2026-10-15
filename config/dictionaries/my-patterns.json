@@ -1,0 +1,23 @@
+{
+  "_attribution": "Minimal seed — no deterministic MY AI-slop catalog exists (research 2026-10 found only ML services); heavily provisional, see docs/false-positives.md. Same format rules as th-patterns.json: NO \\b (ASCII \\b never matches Myanmar letters), no trailing boundary on line-lead rules (unspaced orthography).",
+  "patterns": [
+    {
+      "name": "pomposity_frame",
+      "cat": "my:pomposity_frame",
+      "rx": "အရေးကြီးသောအချက်မှာ",
+      "w": 5
+    },
+    {
+      "name": "conclusion_announcer",
+      "cat": "my:conclusion_announcer",
+      "rx": "(?m)^[\\t ]*(?:[-*+])?[\\t ]*(?:အနှစ်ချုပ်အနေနှင့်|နိဂုံးချုပ်အားဖြင့်|အနှစ်ချုပ်ရလျှင်)",
+      "w": 5
+    },
+    {
+      "name": "paragraph_connector",
+      "cat": "my:paragraph_connector",
+      "rx": "(?m)^[\\t ]*(?:[-*+])?[\\t ]*(?:ထို့အပြင်|ထို့ကြောင့်|အခြားတစ်ဖက်တွင်)",
+      "w": 3
+    }
+  ]
+}

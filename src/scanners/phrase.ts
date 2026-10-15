@@ -1,4 +1,5 @@
 import type { Finding, Lang } from "./types.ts";
+import { LANGS } from "./types.ts";
 import { type Scanner, type ScannerResult } from "./base.ts";
 import { configPath } from "../paths.ts";
 
@@ -8,7 +9,7 @@ import { configPath } from "../paths.ts";
  * dictionaries extracted from texthumanize (MIT) — see
  * config/dictionaries/texthumanize-dicts.json — plus the KO/VI
  * cliche lists distilled during the production series.
- * Zero subprocess, zero network, works for all six languages.
+ * Zero subprocess, zero network, works for all nine languages.
  * Cliches are strong signals (P1); bureaucratic phrases and connectors
  * are weak signals (severity "weak" -> P2 by triage) that matter in
  * repetition, so they surface from their second occurrence.
@@ -42,6 +43,26 @@ const SERIES_CLICHES: Record<Lang, string[]> = {
     "desempeña un papel crucial", "desempeña un papel fundamental",
     "desbloquear el potencial", "en constante evolución", "el panorama de",
     "sumergirse en", "navegar por las complejidades",
+  ],
+  th: [
+    // EN-tic calques + hype from public TH AI-writing guides (TH
+    // academic-humanizing tutorials cite เป็นที่ทราบกันดีว่า-class
+    // patterns; the cliche set is curated, no upstream catalog exists).
+    "ในยุคดิจิทัล", "เป็นเครื่องพิสูจน์ว่า", "มีบทบาทสำคัญ", "ปลดล็อกศักยภาพ",
+    "ปฏิวัติวงการ", "เปลี่ยนโลก", "พลิกโฉมวงการ", "ก้าวกระโดดครั้งใหญ่",
+  ],
+  my: [
+    // Minimal seed — no deterministic MY AI-slop catalog exists (see
+    // docs/false-positives.md); heavily provisional on purpose.
+    "ဒစ်ဂျစ်တယ်ခေတ်", "အရေးပါသောအခန်းကဏ္ဍ",
+  ],
+  id: [
+    // EN-tic calques documented in public ID AI-writing guides
+    // (buildwithangga-class tip lists name "di era digital",
+    // "tak dapat dipungkiri", "selain itu"-repetition directly).
+    "di era digital", "memainkan peran penting", "memainkan peran kunci",
+    "membuka potensi", "tak terbantahkan", "mengubah lanskap",
+    "terus berevolusi", "menyelami dunia",
   ],
   ko: [
     "결론적으로", "시사하는 바가", "주목할 만하", "주목할 점은", "혁신적",
@@ -83,16 +104,29 @@ const SERIES_WEAK: Partial<Record<Lang, string[]>> = {
     "optimizar", "facilitar", "aprovechar", "integral", "invaluable",
     "requerimiento", "utilización", "cautivar", "hoy en día", "profundizar en",
   ],
+  th: [
+    "ยกระดับ", "ขับเคลื่อน", "เหนือชั้น", "อย่างแพร่หลาย",
+  ],
+  my: [],
+  id: [
+    "mengoptimalkan", "memfasilitasi", "implementasi", "metodologi",
+    "revolusioner", "memanfaatkan", "transformasi", "integral",
+    "pada akhirnya",
+  ],
 };
 
 // Length floor by script: latin/cyrillic phrases need >=4 chars to be
-// meaningful; hangul/vietnamese-with-marks/kana-kanji entries are
-// curated lists — no floor (2-3 syllable hangul blocks are full words;
-// 3-4 char JA hype adjectives like 革命的 are complete markers).
+// meaningful; hangul/vietnamese-with-marks/kana-kanji/thai/myanmar
+// entries are curated lists — no floor (2-3 syllable hangul blocks are
+// full words; 3-4 char JA hype adjectives like 革命的 are complete
+// markers; unspaced TH/MY orthographies pack whole markers into few
+// characters, and ASCII \b-style assumptions do not apply).
 function passesLengthFloor(p: string): boolean {
   if (/[\uac00-\ud7af]/.test(p)) return true; // hangul
   if (/[\u1ea0-\u1ef9ăâêôơưđ]/i.test(p)) return true; // vietnamese marks
   if (/[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9fff]/.test(p)) return true; // kana/kanji (JA)
+  if (/[\u0e00-\u0e7f]/.test(p)) return true; // thai
+  if (/[\u1000-\u109f]/.test(p)) return true; // myanmar
   return p.length >= 4;
 }
 
@@ -121,7 +155,7 @@ interface Rule {
 
 export class PhraseScanner implements Scanner {
   readonly name = "phrases";
-  readonly langs: Lang[] = ["en", "ru", "ko", "vi", "ja", "es"];
+  readonly langs: Lang[] = [...LANGS];
 
   async available(): Promise<boolean> {
     try {
