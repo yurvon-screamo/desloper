@@ -1,0 +1,29 @@
+{
+  "_attribution": "Curated from dorelysm/naturalizacion-texto-es (MIT, absorbed as data — see config/dictionaries/README.md) + ES AI-slop writing guides. Format mirrors zero-slop-patterns.json: patterns[{name, cat, rx (Python-style flags), w (severity weight, >=4 -> high)}]. No lexicon key: ES Tier-2 vocabulary lives in src/scanners/phrase.ts SERIES_WEAK.es instead.",
+  "patterns": [
+    {
+      "name": "pomposity_frame",
+      "cat": "pomposity_frame",
+      "rx": "(?i)\\b(?:es importante (?:destacar|señalar|mencionar|recordar|tener en cuenta)|cabe (?:destacar|mencionar|señalar|recordar|preguntarse)|vale la pena (?:señalar|destacar|mencionar)|es fundamental (?:que|entender|comprender|recordar)|es evidente que|permíteme explicarte|no cabe duda de que)\\b",
+      "w": 5
+    },
+    {
+      "name": "conclusion_announcer",
+      "cat": "conclusion_announcer",
+      "rx": "(?mi)^[\\t ]*(?:[-*+])?[\\t ]*(?:en conclusión|en resumen|para concluir|en síntesis|para terminar|en definitiva)\\b",
+      "w": 5
+    },
+    {
+      "name": "paragraph_connector",
+      "cat": "paragraph_connector",
+      "rx": "(?mi)^[\\t ]*(?:[-*+])?[\\t ]*(?:además|por otro lado|sin embargo|no obstante|asimismo|por lo tanto|en consecuencia|en primer lugar|en segundo lugar|por supuesto)[,;]",
+      "w": 3
+    },
+    {
+      "name": "conclusion_announcer_mid",
+      "cat": "conclusion_announcer",
+      "rx": "(?i)(?<=[.;:])[ \\t]+(?:en conclusión|en resumen|para concluir|en síntesis|para terminar|en definitiva)\\b",
+      "w": 4
+    }
+  ]
+}

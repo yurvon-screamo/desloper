@@ -18,6 +18,12 @@
 #                    (MIT, azu) converted to JSON; colon-continuation
 #                    (kuromojin-dependent) and ai-tech-writing-guideline
 #                    (FP-prone) deliberately not absorbed.
+#   - es-lint       (es) — dorelysm/naturalizacion-texto-es (MIT)
+#                    SUBSTITUTIONS.md tiers 1/3/4 converted to regex
+#                    rules + hand-coded repetition detectors (triads,
+#                    -mente chains, poder+infinitivo, spaced em-dash
+#                    inciso with dialogue-raya guard); Tier-2 vocabulary
+#                    lives in the phrases scanner (SERIES_WEAK.es).
 #   - desloper      (all) — vendor-independent P0 placeholder scanner.
 #   - ru-structural (ru) — built-in structural detectors (fragment
 #                    leads, em-dash DENSITY, arrows in prose); thresholds
@@ -61,3 +67,7 @@ tools:
 #   texthumanize (system CLI)   -> cliche/bureaucratic dictionaries (en/ru/ko/vi)
 #   Aboudjem/humanizer-skill    -> src/scanners/{metrics,vocabulary,tokenize}.js vendored
 #   longhang2004/vietnamese-humanizer -> vi-patterns.json (pattern catalog)
+#   textlint-ja/textlint-rule-preset-ai-writing -> ja-patterns.json (pattern catalog)
+#   dorelysm/naturalizacion-texto-es @ 7eaba75 -> es-patterns.json (tiers 1/3/4;
+#     the repo itself is an LLM skill with no deterministic script, so only the
+#     data was absorbable — no vendor process exists for ES)

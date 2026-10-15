@@ -10,10 +10,10 @@ jq '.summary' "$report"
 # Exit policy: findings present (p0+p1 > 0) must yield exit 1.
 test "$ec" -eq 1
 jq -e '.summary.tool_failures == 0' "$report"
-jq -e '.summary.p0 == 2' "$report"
+jq -e '.summary.p0 == 3' "$report" # 2 legacy + 1 es fixture placeholder
 # Every scanner must produce at least one finding on the fixtures
 # (regressions to zero-findings must fail CI).
-for t in desloper phrases avoid-ai-writing patterns-en metrics humanizer-ru im-not-ai natural-japanese ja-lint viet-lint ru-structural; do
+for t in desloper phrases avoid-ai-writing patterns-en metrics humanizer-ru im-not-ai natural-japanese ja-lint viet-lint ru-structural es-lint; do
   jq -e --arg t "$t" '[.tool_runs[] | select(.tool==$t) | .findings] | add >= 1' "$report"
 done
 jq -e '.language_uncertain | type == "array"' "$report"

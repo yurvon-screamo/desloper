@@ -18,7 +18,11 @@ export interface Finding {
   fpReason: string | null;
 }
 
-export type Lang = "en" | "ru" | "ko" | "vi" | "ja";
+export type Lang = "en" | "ru" | "ko" | "vi" | "ja" | "es";
+
+/** Single source of truth for the supported-language list; cli usage
+ * text, --lang validation and report metadata all derive from it. */
+export const LANGS: readonly Lang[] = ["en", "ru", "ko", "vi", "ja", "es"];
 
 /** Per-scanner run outcome. */
 export interface ToolRun {

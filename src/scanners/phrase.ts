@@ -8,7 +8,7 @@ import { configPath } from "../paths.ts";
  * dictionaries extracted from texthumanize (MIT) — see
  * config/dictionaries/texthumanize-dicts.json — plus the KO/VI
  * cliche lists distilled during the production series.
- * Zero subprocess, zero network, works for all five languages.
+ * Zero subprocess, zero network, works for all six languages.
  * Cliches are strong signals (P1); bureaucratic phrases and connectors
  * are weak signals (severity "weak" -> P2 by triage) that matter in
  * repetition, so they surface from their second occurrence.
@@ -31,6 +31,18 @@ interface LangDicts {
 const SERIES_CLICHES: Record<Lang, string[]> = {
   en: [],
   ru: [],
+  es: [
+    // EN-tic calques documented across ES AI-slop catalogs
+    // (dorelysm/naturalizacion-texto-es SUBSTITUTIONS.md, ES NLP writing
+    // guides). Pomposity frames ("cabe destacar", "es importante ...")
+    // deliberately NOT duplicated here — they are es:pomposity_frame
+    // rules in es-patterns.json (ja dedup policy).
+    "en el mundo de", "en la era digital", "juega un papel crucial",
+    "juega un papel fundamental", "juega un papel importante",
+    "desempeña un papel crucial", "desempeña un papel fundamental",
+    "desbloquear el potencial", "en constante evolución", "el panorama de",
+    "sumergirse en", "navegar por las complejidades",
+  ],
   ko: [
     "결론적으로", "시사하는 바가", "주목할 만하", "주목할 점은", "혁신적",
     "획기적", "압도적", "전례 없", "정리하자면", "되어진다", "에 의해",
@@ -56,12 +68,20 @@ const SERIES_CLICHES: Record<Lang, string[]> = {
 
 // Series-distilled weak signals (bureaucratic/templates) — P2 material
 // that matters in repetition, so they surface from their 2nd occurrence.
-// Only JA so far; KO/VI weak lists live in the texthumanize dicts.
+// ES: curated Tier-2 vocabulary (dorelysm catalog) — ordinary Spanish
+// words that AI overuses; weak+count-escalation keeps single legitimate
+// uses FP-free. "fundamental" is excluded: the frame "Es fundamental
+// que" already carries it in es:pomposity_frame (dedup policy).
 const SERIES_WEAK: Partial<Record<Lang, string[]>> = {
   ja: [
     "することが可能", "する必要があります", "と言えるでしょう", "ではないでしょうか",
     "浮き彫り", "これにより", "幸いです", "以下で解説", "一概には言えません",
     "ケースバイケース", "掘り下げ", "多角的", "まず最初に", "活用する",
+  ],
+  es: [
+    "transformar", "fomentar", "explorar", "implementación", "metodología",
+    "optimizar", "facilitar", "aprovechar", "integral", "invaluable",
+    "requerimiento", "utilización", "cautivar", "hoy en día", "profundizar en",
   ],
 };
 
@@ -101,7 +121,7 @@ interface Rule {
 
 export class PhraseScanner implements Scanner {
   readonly name = "phrases";
-  readonly langs: Lang[] = ["en", "ru", "ko", "vi", "ja"];
+  readonly langs: Lang[] = ["en", "ru", "ko", "vi", "ja", "es"];
 
   async available(): Promise<boolean> {
     try {

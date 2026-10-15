@@ -7,6 +7,7 @@ import { triage } from "./triage.ts";
 import { loadSuppressRules } from "./suppress.ts";
 import { configPath } from "./paths.ts";
 import { scanP0 } from "./scanners/p0.ts";
+import { LANGS } from "./scanners/types.ts";
 import { renderMarkdown } from "./report.ts";
 import type { Finding, Lang, Report, ToolRun } from "./scanners/types.ts";
 import type { Scanner } from "./scanners/base.ts";
@@ -20,6 +21,7 @@ import { NaturalJapaneseScanner } from "./scanners/natural-japanese.ts";
 import { ViBuiltinScanner } from "./scanners/vi-builtin.ts";
 import { JaBuiltinScanner } from "./scanners/ja-builtin.ts";
 import { RuStructuralScanner } from "./scanners/ru-structural.ts";
+import { EsBuiltinScanner } from "./scanners/es-builtin.ts";
 
 function usage(code = 3): never {
   console.error(`desloper — multilingual AI-slop auditor
@@ -30,7 +32,7 @@ Usage:
 
 Options:
   --json          machine-readable report (schema v1) to stdout
-  --lang <l>      force language for all files (en|ru|ko|vi|ja)
+  --lang <l>      force language for all files (${LANGS.join("|")})
   --setup         install vendor scanners into vendors/
   --dry-run       with --setup: print planned steps only
   --help          this help
@@ -62,8 +64,8 @@ async function main() {
   const { values, positionals } = parsed;
   if (values.help) usage(0);
   const langOverride = (values.lang as Lang | undefined) ?? null;
-  if (langOverride && !["en", "ru", "ko", "vi", "ja"].includes(langOverride)) {
-    console.error(`--lang must be one of en|ru|ko|vi|ja, got "${langOverride}"`);
+  if (langOverride && !LANGS.includes(langOverride)) {
+    console.error(`--lang must be one of ${LANGS.join("|")}, got "${langOverride}"`);
     process.exit(3);
   }
 
@@ -91,6 +93,7 @@ async function main() {
     new ViBuiltinScanner(),
     new JaBuiltinScanner(),
     new RuStructuralScanner(),
+    new EsBuiltinScanner(),
   ];
 
   // Group files by language; vendor-independent P0 scan runs on raw content.

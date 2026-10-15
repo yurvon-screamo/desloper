@@ -6,6 +6,7 @@ import zeroSlopPatterns from "../config/dictionaries/zero-slop-patterns.json" wi
 import texthumanizeDicts from "../config/dictionaries/texthumanize-dicts.json" with { type: "file" };
 import viPatterns from "../config/dictionaries/vi-patterns.json" with { type: "file" };
 import jaPatterns from "../config/dictionaries/ja-patterns.json" with { type: "file" };
+import esPatterns from "../config/dictionaries/es-patterns.json" with { type: "file" };
 import setupVendorsScript from "../setup-vendors.sh" with { type: "file" };
 
 /**
@@ -29,6 +30,7 @@ const CONFIG_ASSETS = {
   "dictionaries/texthumanize-dicts.json": texthumanizeDicts,
   "dictionaries/vi-patterns.json": viPatterns,
   "dictionaries/ja-patterns.json": jaPatterns,
+  "dictionaries/es-patterns.json": esPatterns,
 } as const;
 
 export type ConfigAsset = keyof typeof CONFIG_ASSETS;

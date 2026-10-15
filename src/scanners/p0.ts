@@ -10,6 +10,7 @@ import type { Finding, Lang, ToolRun } from "./types.ts";
  * and by triage for vendor-quote matching. */
 export const P0_PATTERNS: RegExp[] = [
   /\[your [a-z ]{2,30}\]/i, // unfilled template placeholder: "[your language]"
+  /\[insertar [a-záéíóúñü ]{2,40}\]/i, // ES template placeholder: "[insertar estadística aquí]"
   /\bINSERT [A-Z][A-Z ]{2,30}\b/,
   /\bLorem ipsum\b/i,
 ];

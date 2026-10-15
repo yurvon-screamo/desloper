@@ -31,6 +31,9 @@ const P1_CATEGORIES = new Set([
   // is rhythm/structure and lives in P2_CATEGORIES below.
   "ja:forbidden_phrase", "ja:antithesis_repetition", "ja:boilerplate_heading",
   "ja:double_negative",
+  // es-lint phrase-level tells (catalog absorbed as data); every other
+  // es: category is structural and lives in P2_CATEGORIES below.
+  "es:pomposity_frame", "es:conclusion_announcer",
 ]);
 const P1_CATEGORY_PREFIXES = ["ru:", "VI-HUM", "zs:"];
 const P2_CATEGORIES = new Set([
@@ -52,6 +55,10 @@ const P2_CATEGORIES = new Set([
   // the weak-intensifier hype subset are P2 material (upstream itself is
   // suggestion-level there); strong hype H02/H03 default to visible P1.
   "JA-AI-L01", "JA-AI-L02", "JA-AI-E01", "JA-AI-E02", "JA-AI-E03", "JA-AI-H01",
+  // es-lint structural detectors. Unknown es: categories are NOT listed
+  // here — vendor/catalog updates default to visible P1, never silent P2.
+  "es:paragraph_connector", "es:triads", "es:mente_adverb_chain",
+  "es:poder_infinitivo", "es:em_dash_inciso",
 ]);
 
 /** Upstream corpus calibration: aaw allows up to 6 findings per file. */

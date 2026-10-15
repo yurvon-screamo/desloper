@@ -1,7 +1,7 @@
 # desloper
 
 Multilingual **AI-slop auditor** for content teams: scans markdown in English,
-Russian, Korean, Vietnamese, and Japanese; triages findings into fixable priorities vs
+Russian, Korean, Vietnamese, Japanese, and Spanish; triages findings into fixable priorities vs
 documented false positives; exits CI-safe.
 
 Built from a production deslop series (5 PR cycles on a real landing page,
@@ -67,8 +67,9 @@ none of them — it ships in-process).
 | KO | phrases (KO cliche dict) | im-not-ai (deterministic KatFish metrics) |
 | VI | phrases + viet-lint (43 VI-HUM patterns) | — |
 | JA | phrases (JA cliche dict) + ja-lint (JA-AI patterns from textlint-ja preset) | natural-japanese (corpus-calibrated: rhythm burstiness, paragraph uniformity, translationese — 137 human / 406 AI texts) |
+| ES | phrases (ES cliche dict) + es-lint (pomposity frames, conclusion announcers, paragraph connectors, triads, -mente chains, poder+infinitivo, em-dash inciso) | — |
 
-The built-in `phrases` scanner works across all five languages using AI
+The built-in `phrases` scanner works across all six languages using AI
 cliche/bureaucratic dictionaries extracted from texthumanize + lists
 distilled during the production series.
 
@@ -163,9 +164,12 @@ Node needed. Its gate threshold was calibrated on a 376-document corpus, and
 a golden-diff test pins the adapter to deep-equal (structural) output of the
 upstream CLI.
 
-**4 absorbed** as data with attribution (see `config/dictionaries/README.md`):
+**6 absorbed** as data with attribution (see `config/dictionaries/README.md`):
 texthumanize (system CLI), humanizer-skill (dormant), vietnamese-humanizer
-(dormant), ZeroSlop (npx → built-in `patterns-en`).
+(dormant), ZeroSlop (npx → built-in `patterns-en`), textlint-ja preset
+(built-in `ja-lint`), naturalizacion-texto-es (built-in `es-lint` — the
+upstream is an LLM skill with no deterministic script, so only its
+SUBSTITUTIONS catalog was absorbable).
 
 Zero network dependencies at scan time. Content never leaves the machine.
 

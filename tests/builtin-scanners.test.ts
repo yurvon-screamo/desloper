@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { PhraseScanner } from "../src/scanners/phrase.ts";
-import { ViBuiltinScanner } from "../src/scanners/vi-builtin.ts";
+import { ViBuiltinScanner, compilePyRegex } from "../src/scanners/vi-builtin.ts";
 import { JaBuiltinScanner } from "../src/scanners/ja-builtin.ts";
+import { EsBuiltinScanner } from "../src/scanners/es-builtin.ts";
 import { MetricsScanner } from "../src/scanners/metrics-scanner.ts";
 
 const en = "We're thrilled to announce cutting-edge tech. In conclusion, only time will tell.";
@@ -42,6 +43,19 @@ describe("PhraseScanner", () => {
     const ja = "設定することが可能です。変更することが可能です。";
     const r = await new PhraseScanner().scan(["t.md"], "ja", new Map([["t.md", ja]]));
     expect(r.findings.some((f) => f.severity === "weak" && (f.quote ?? "").includes("することが可能"))).toBe(true);
+  });
+  test("ES cliche (EN-tic calque) detected", async () => {
+    const r = await new PhraseScanner().scan(["t.md"], "es", new Map([["t.md", "La IA juega un papel crucial hoy."]]));
+    expect(r.findings.some((f) => f.severity === "phrase" && (f.quote ?? "").includes("juega un papel crucial"))).toBe(true);
+  });
+  test("ES weak signals need repetition (single occurrence suppressed)", async () => {
+    // "facilitar" is Tier-2 vocabulary (weak): one legitimate use -> silent
+    const r = await new PhraseScanner().scan(["t.md"], "es", new Map([["t.md", "Sirve para facilitar el trabajo diario."]]));
+    expect(r.findings.length).toBe(0);
+  });
+  test("ES weak signals surface from second occurrence", async () => {
+    const r = await new PhraseScanner().scan(["t.md"], "es", new Map([["t.md", "Sirve para facilitar el trabajo. También sirve para facilitar la vida."]]));
+    expect(r.findings.some((f) => f.severity === "weak" && (f.quote ?? "").includes("facilitar"))).toBe(true);
   });
   test("weak signals need repetition (single occurrence suppressed)", async () => {
     // "является" is a bureaucratic phrase (weak): one occurrence -> no finding
@@ -159,6 +173,114 @@ describe("JaBuiltinScanner", () => {
       for (const src of p.signals?.regex ?? []) {
         expect(compileRuleRegex(src)).not.toBeNull();
       }
+    }
+  });
+});
+
+describe("EsBuiltinScanner", () => {
+  async function scan(text: string) {
+    return new EsBuiltinScanner().scan(["t.md"], "es", new Map([["t.md", text]]));
+  }
+  test("es golden fixture triggers every es-lint detector family", async () => {
+    const text = await Bun.file("tests/fixtures/es/sample-slop.md").text();
+    const r = await scan(text);
+    const cats = new Set(r.findings.map((f) => f.category));
+    for (const cat of [
+      "es:pomposity_frame", "es:conclusion_announcer", "es:paragraph_connector",
+      "es:triads", "es:mente_adverb_chain", "es:poder_infinitivo", "es:em_dash_inciso",
+    ]) {
+      expect(cats.has(cat)).toBe(true);
+    }
+  });
+  test("pomposity frame detected case-insensitively with line number", async () => {
+    const r = await scan("Un punto de partida. Es importante destacar que esto funciona.\n");
+    expect(r.findings.some((f) => f.category === "es:pomposity_frame" && f.line === 1)).toBe(true);
+  });
+  test("conclusion announcer fires at line start and sentence start", async () => {
+    const text = "En resumen, todo cuadra.\nEl plan cambió. En conclusión, sigue igual.\n";
+    const r = await scan(text);
+    const announcers = r.findings.filter((f) => f.category === "es:conclusion_announcer");
+    expect(announcers.length).toBe(2);
+    expect(announcers.map((f) => f.line).sort()).toEqual([1, 2]);
+  });
+  test("paragraph-start announcer after a previous sentence fires exactly ONCE, on its own line", async () => {
+    // Regression: the sentence-start rule's \s+ used to swallow newlines,
+    // duplicating the ^-rule hit and attributing it to the earlier line.
+    const text = "Terminó la reunión anual.\n\nEn resumen, todo cuadra bien.\n";
+    const r = await scan(text);
+    const announcers = r.findings.filter((f) => f.category === "es:conclusion_announcer");
+    expect(announcers.length).toBe(1);
+    expect(announcers[0].line).toBe(3);
+  });
+  test("conclusion announcer does NOT fire mid-phrase without punctuation", async () => {
+    const r = await scan("Al final dijeron que en resumen todo cuadra igual.\n");
+    expect(r.findings.some((f) => f.category === "es:conclusion_announcer")).toBe(false);
+  });
+  test("paragraph connector fires at line start with comma, not mid-line", async () => {
+    const text = "Además, esto es nuevo.\nY además, esto no es inicio de párrafo.\n";
+    const r = await scan(text);
+    const conn = r.findings.filter((f) => f.category === "es:paragraph_connector");
+    expect(conn.length).toBe(1);
+    expect(conn[0].line).toBe(1);
+  });
+  test("triads fire from third occurrence, single pair stays clean", async () => {
+    const one = "El viaje cubría Madrid, Barcelona y Valencia sin paradas.\n";
+    const three = one + one.replace("Madrid", "Toledo") + one.replace("Madrid", "Girona");
+    expect((await scan(one)).findings.some((f) => f.category === "es:triads")).toBe(false);
+    expect((await scan(three)).findings.some((f) => f.category === "es:triads")).toBe(true);
+  });
+  test("mente chain needs two adverbs in one sentence", async () => {
+    const r = await scan("El mercado evoluciona rápidamente y, frecuentemente, se transforma.\n");
+    expect(r.findings.some((f) => f.category === "es:mente_adverb_chain")).toBe(true);
+    const single = await scan("Naturalmente, el mercado evoluciona sin prisa.\n");
+    expect(single.findings.some((f) => f.category === "es:mente_adverb_chain")).toBe(false);
+  });
+  test("poder+infinitivo fires from third occurrence", async () => {
+    const text = "Esto puede ayudar. Aquellos pueden mejorar. Todo podría ser distinto.\n";
+    const r = await scan(text);
+    expect(r.findings.some((f) => f.category === "es:poder_infinitivo")).toBe(true);
+  });
+  test("future-tense poder forms count toward poder+infinitivo", async () => {
+    const text = "Podremos ayudar en ese caso. También podremos mejorar el proceso. Y podremos avanzar después.\n";
+    const r = await scan(text);
+    expect(r.findings.some((f) => f.category === "es:poder_infinitivo")).toBe(true);
+  });
+  test("announcer after list marker or indentation is caught", async () => {
+    const text = "- En resumen, todo cuadra.\n  En conclusión, sigue igual.\n3. En definitiva, acaba igual.\n";
+    const r = await scan(text);
+    const announcers = r.findings.filter((f) => f.category === "es:conclusion_announcer");
+    // "3. En definitiva" is caught once, by the sentence-start rule (the
+    // numbered marker would double-report with the ^ rule).
+    expect(announcers.map((f) => f.line).sort()).toEqual([1, 2, 3]);
+  });
+  test("spaced em-dash inciso fires; attached dialogue raya does not", async () => {
+    const inciso = await scan("El plan — según dijeron — ya está en marcha.\n");
+    expect(inciso.findings.some((f) => f.category === "es:em_dash_inciso")).toBe(true);
+    const dialogue = await scan("—Hola, dijo el director al entrar en la sala de juntas.\n");
+    expect(dialogue.findings.some((f) => f.category === "es:em_dash_inciso")).toBe(false);
+  });
+  test("two unrelated consequence dashes on one line stay clean", async () => {
+    const r = await scan("Ganamos — porque el equipo trabajó. Perdimos — porque el mercado cayó.\n");
+    expect(r.findings.some((f) => f.category === "es:em_dash_inciso")).toBe(false);
+  });
+  test("code fences are skipped by hand-coded detectors", async () => {
+    const text = "Ejemplo:\n```\na, b y c\nd, e y f\ng, h y i\n```\n";
+    const r = await scan(text);
+    expect(r.findings.some((f) => f.category === "es:triads")).toBe(false);
+  });
+  test("plain human Spanish prose produces no es-lint findings", async () => {
+    const text = "Ayer fuimos al mercado de la plaza. Compramos tomates, pan y queso para la cena. " +
+      "La vendedora nos contó que su hijo estudia en Valencia.\n";
+    const r = await scan(text);
+    expect(r.findings.length).toBe(0);
+  });
+  test("catalog compiles: no silent regex drop in es-patterns", async () => {
+    const raw = JSON.parse(
+      await Bun.file("config/dictionaries/es-patterns.json").text(),
+    ) as { patterns: { name: string; rx: string }[] };
+    expect(raw.patterns.length).toBeGreaterThan(0);
+    for (const p of raw.patterns) {
+      expect(compilePyRegex(p.rx)).not.toBeNull();
     }
   });
 });

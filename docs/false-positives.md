@@ -89,3 +89,45 @@ per-project via `.desloper.yaml`.
   matches markdown line shapes instead. A list item split across two
   physical lines, or bold spanning lines, can be missed. Deterministic
   and conservative — no FP direction risk, only recall loss.
+- **ES false-positive map is provisional.** Like JA, the ES catalog was
+  not yet exercised on a real content corpus — it is curated from the
+  dorelysm/naturalizacion-texto-es catalog (MIT) plus EN-tic calque
+  documentation, not from production deslop rounds. Known FP classes:
+  - **Pomposity frames and conclusion announcers are single-shot P1.**
+    Unlike Tier-2 weak vocabulary (repetition-gated), "Cabe mencionar
+    que" / "En resumen," flag on their FIRST occurrence — that is the
+    point of a strong tell. Human essayistic prose does open paragraphs
+    with "En resumen"; a single such finding on a human document is
+    expected noise, not a detection failure. Suppress per-project for
+    genres where these are house style.
+  - **Paragraph connectors** ("Además,", "Sin embargo,") are legitimate
+    in human essayistic prose; only line-start + comma shapes flag (P2).
+  - **Tier-2 vocabulary** (facilitar, optimizar, hoy en día…) are
+    ordinary Spanish words — they surface only from their second
+    occurrence (P2 weak), escalating at ×3. A single legitimate use is
+    silent by design.
+  - **Triads** ("Madrid, Barcelona y Valencia") are a human rhetorical
+    figure too; a document needs 3+ of them to flag.
+  - **Em-dash inciso** flags only a dash pair enclosing a clause without
+    sentence enders (" — así — "). The dialogue raya ("—Hola") attaches
+    to the speech and never flags; single consequence dashes — even two
+    on one line — stay clean.
+  - **el panorama de / sumergirse en / profundizar en (weak)** appear in
+    legitimate economic/academic prose; the phrases counts make repeat
+    use visible rather than banning the words.
+  - **ES/PT detection boundary.** Portuguese is the main confusion
+    risk (shared stopword stock). The content detector requires ES
+    stopwords to outnumber PT marks 3:1, and PT diacritics (ã/õ/ç)
+    suppress the es bucket entirely. Paths with an es/ spa/ spanish/
+    espanol segment bypass content detection — mixed-locale trees
+    should rely on path segments.
+  - **Path aliases `es`/`spa` collide with dev content.** For a tool
+    that audits developer docs this is the sharpest alias trap:
+    "es-modules-guide.md", "es-next-features.md" (ECMAScript) and a
+    "spa/" (single-page app) directory route to the ES bucket — EN
+    scanners silently do not run and path-based detection is always
+    "confident" (no language_uncertain marker). Name ECMAScript
+    content "ecmascript/…" or scan it with an explicit `--lang en`.
+  - **P0 placeholders include ES conventions** ("[insertar …]"), unlike
+    JA (【】 skipped as FP-prone). A human ES doc quoting a bracket
+    template in prose will flag P0 — same tradeoff as the EN rule.
